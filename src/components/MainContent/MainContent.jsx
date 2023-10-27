@@ -31,6 +31,7 @@ const MainContent = observer(() => {
     const [pages, setPages] = useState([]);
     const [nextUrl, setNextUrl] = useState('');
     const [previousUrl, setPreviousUrl] = useState('');
+    const [currentNumbers, setCurrentNumbers] = useState([]);
     const cardId = useId();
     const paginationId = useId();
 
@@ -43,8 +44,10 @@ const MainContent = observer(() => {
             .then((data) => {
                 if (!offset || !limit) {
                     setCurrentPage(1);
+                    setCurrentNumbers([...Array(6).keys()].slice(1));
                 } else {
                     setCurrentPage(offset / limit);
+                    setCurrentNumbers([...Array(6 * (offset / limit)).keys()].slice(1));
                 }
                 const numberOfPages = Math.ceil(data.count / currentRecords);
                 PokemonsStore.setPokemons(data.results);
@@ -85,6 +88,13 @@ const MainContent = observer(() => {
         }
     };
 
+    useEffect(() => {
+        if (currentPage === 1) {
+            setCurrentNumbers([...Array(6).keys()].slice(1));
+        };
+        setCurrentNumbers([...Array(6 * currentPage).keys()].slice(6*(currentPage-1)));
+    }, [currentPage])
+
     // useEffect(() => {
     //     const indexOfLastRecord = currentPage * currentRecords;
     //     const indexOfFirstRecord = indexOfLastRecord - currentRecords;
@@ -105,14 +115,10 @@ const MainContent = observer(() => {
                     <Link onClick={handlePreviousClick} to={`?offset=${currentPage * currentRecords}&limit=${currentRecords}`}>dfgfdgd</Link>
                 </li>
                 {
-                    pages.length > 5 ?
-                        pages.splice(0, 5).map((elem, index) => (
-                            <li key={`${paginationId}-${index}`}>{elem}</li>
-                        ))
-                        :
-                        pages.map(() => (
-                            <li></li>
-                        ))
+                    currentNumbers.map((elem, index) => (
+                        <li key={`${paginationId}-${index}`}>{elem}</li>
+                    ))
+
                 }
                 <li>
                     <Link onClick={handleNextClick} to={`?offset=${currentPage * currentRecords}&limit=${currentRecords}`}>dfgfdg</Link>
