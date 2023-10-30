@@ -2,17 +2,33 @@ import { useEffect, useId, useState } from "react";
 import styled from "styled-components";
 import { BASE_URL } from "../../utils/const";
 import axios from "axios";
+import PokemonPopup from "../PokemonPopup/PokemonPopup";
+import PokemonsStore from "../../store/PokemonsStore";
+import { useMemo } from "react";
+import { observer } from "mobx-react-lite";
 
 const CardWrapper = styled.div`
-    padding: 18px 10px;
-    background-color: #E6FCFC;
-    border: 1px solid black;
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    height: 240px;
+    & {
+        position: relative;
+        padding: 18px 10px;
+        background-color: #ffffff;
+        border: 3px solid purple;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        height: 240px;
+        cursor: pointer;
+        color: black;
+        transition: background-color ease-in-out .4s,
+                    border ease-in-out .4s;
+    }
+    &:hover {
+        background-color: rgba(255, 255, 255, .8);
+        border: 3px solid orange;
+    }
+
 `;
 
 const List = styled.ul`
@@ -23,54 +39,59 @@ const List = styled.ul`
 `;
 
 const ListElement = styled.li`
-    text-shadow: 1px 1px 2px red;
-`;  
+    text-shadow: 1px 1px 2px #faba65;
+    color: #faba65;
+`;
 
-const Card = ({ name, url }) => {
-    const [imgSrc, setImgSrc] = useState('');
-    const [types, setTypes] = useState([]);
-    const [attackValue, setAttackValue] = useState(0);
-    const [id, setId] = useState(null);
+const Avatar = styled.img`
+    width: 100px;
+    height: 100px;
+`
+
+const Card = observer(({pokemon}) => {
     const [isLoading, setIsLoading] = useState(true);
+    const [img, setImg] = useState('');
+    const [isPopupVisible, setIsPopupVisible] = useState(false);
+    const typeId = useId();
 
     useEffect(() => {
         setIsLoading(true);
-        axios.get(`${url}`)
-            .then(res => res.data)
-            .then((data) => {
-                setImgSrc(data.sprites.front_default);
-                setTypes(data.types);
-                setAttackValue(data.stats[1].base_stat);
-            })
-            .catch((e) => {
+        const getImgs = async () => {
+            try {
+                const { data } = await axios.get(pokemon.img);
+                setImg(`data:image/jpg;base64${data}`);
+            } catch (e) {
                 console.log(e);
+                setIsLoading(true);
+            } finally {
                 setIsLoading(false);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            })
-    }, [url])
+            }
+        }
+        getImgs();
+    },[])
+
     return (
-        <CardWrapper>
-                <span>{name}</span>
-                {
-                    isLoading ?
+        <CardWrapper onMouseEnter={() => setIsPopupVisible(true)} onMouseLeave={() => setIsPopupVisible(false)}>
+            <h2>{pokemon.name}</h2>
+            {
+                isLoading ?
                     <span className="loader"></span>
                     :
-                    <img src={imgSrc} alt={name}></img>
-                }
+                    <Avatar src={pokemon.img} alt={pokemon.name}></Avatar>
+            }
             <div>
-            <List>
-                {
-                    types.map((type, index) => (
-                        <ListElement key={`${id}-${index}`}>{type.type.name}</ListElement>
-                    ))
-                }
-            </List>
-            <span>Атака: {attackValue}</span>
+                <List>
+                    {
+                        pokemon.types.map((type, index) => (
+                            <ListElement key={`${typeId}-${index}`}>{type.type.name}</ListElement>
+                        ))
+                    }
+                </List>
+                <span>Атака: {pokemon.attack}</span>
             </div>
+            <PokemonPopup isVisible={isPopupVisible} height={pokemon.height} weight={pokemon.weight} baseExperience={pokemon.baseExperience} />
         </CardWrapper>
     )
-}
+})
 
 export default Card;

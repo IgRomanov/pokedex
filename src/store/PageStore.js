@@ -8,6 +8,10 @@ class PageStore {
         makeAutoObservable(this)
     };
 
+    setLimit(limit) {
+        this._limit = limit;
+    };
+
     setPage(page) {
         this._currentPage = page;
         this._offset = (page - 1) * this._limit;
@@ -19,11 +23,11 @@ class PageStore {
 
     get currentOffset() {
         return toJS(this._offset);
-    }
+    };
 
     get currentLimit() {
         return toJS(this._limit);
-    }
+    };
 };
 
 export default new PageStore();

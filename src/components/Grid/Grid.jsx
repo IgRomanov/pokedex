@@ -1,8 +1,9 @@
 import styled from "styled-components";
 import Card from "../Card/Card";
-import { useEffect } from "react";
+import PokemonsStore from "../../store/PokemonsStore";
+import { useMemo } from "react";
+import { useState } from "react";
 
-import { useParams, useLocation } from "react-router-dom";
 const GridContainer = styled.div`
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -12,17 +13,43 @@ const GridContainer = styled.div`
     background-color: black;
 `;
 
-const Grid = ({cardId, allPokemons}) => {
+const NotFoundContainer = styled.div`
+    gap: none;
+    display: block;
+    padding: 30px 30px;
+    background-color: black;
+    min-height: 100vh;
+;`
+
+const NotFoundH2 = styled.h2`
+    color: white;
+    text-align: center;
+    margin-top: 30%;
+    font-size: 50px;
+`;
+
+const Grid = ({ cardId, allPokemons }) => {
+    // const filteredPokemons = useMemo(() => {
+    //     types.filter((type) => {
+    //         console.log(types)
+    //     })
+    // }, [PokemonsStore.selectedTypes])
     return (
-        <GridContainer>
-            {
-                allPokemons.map((pokemon, index) => (
-                    <Card key={`${cardId}-${index}`} name={pokemon.name} url={pokemon.url}></Card>
-                )
-                )
-            }
-        </GridContainer>
-    )
+        <>
+         {
+            allPokemons.length > 0 ?
+                <GridContainer>
+                    {
+                        allPokemons.map((pokemon, index) => (
+                            <Card key={`${cardId}-${index}`} pokemon={pokemon}></Card>
+                        ))
+                    }
+                </GridContainer>
+            :
+                <NotFoundContainer><NotFoundH2>Not found</NotFoundH2></NotFoundContainer>
+         }
+        </>
+    )   
 };
 
 export default Grid;

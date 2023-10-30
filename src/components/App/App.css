@@ -3,7 +3,9 @@ body {
 }
 
 .App {
+  position: relative;
   width: calc(100% - 400px);
   margin: 0 auto;
   font-family: 'Roboto', sans-serif;
+  color: white;
 }
