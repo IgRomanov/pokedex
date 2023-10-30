@@ -33,15 +33,17 @@ const App = observer(() => {
 
     const handlePreviousClick = async () => {
         try {
-            PokemonsStore.clearDataOfPokemons();
+            PageStore.setPage(PageStore.currentPage - 1);
+            PokemonsStore.setPokemons([]);
+            console.log(PageStore.currentPage)
             const { data } = await axios.get(previousUrl);
             data.results.forEach(async (pokemon, index) => {
-                const res = await axios.get(`${BASE_URL}pokemon/${index + 1}`);
+                const currentPokemonId = Number(pokemon.url.split('/pokemon/')[1].replace('/', ''));
+                const res = await axios.get(`${BASE_URL}pokemon/${currentPokemonId}`);
                 PokemonsStore.setPokemons(
-                    [...PokemonsStore.allPokemons, { name: data.results[index].name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: data.base_experience }]
+                    [...PokemonsStore.allPokemons, { name: res.data.name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: res.data.base_experience }]
                 );
             })
-            PageStore.setPage(PageStore.currentPage - 1);
             setPreviousUrl(data.previous);
             setNextUrl(data.next);
             navigate(`/${PageStore.currentPage}`);
@@ -55,15 +57,18 @@ const App = observer(() => {
 
     const handleNextClick = async () => {
         try {
-            PokemonsStore.clearDataOfPokemons();
+            PageStore.setPage(PageStore.currentPage + 1);
+            PokemonsStore.setPokemons([]);
             const { data } = await axios.get(nextUrl);
             data.results.forEach(async (pokemon, index) => {
-                const res = await axios.get(`${BASE_URL}pokemon/${index + 1}`);
+                const currentPokemonId = Number(pokemon.url.split('/pokemon/')[1].replace('/', ''));
+                const res = await axios.get(`${BASE_URL}pokemon/${currentPokemonId}`);
                 PokemonsStore.setPokemons(
-                    [...PokemonsStore.allPokemons, { name: data.results[index].name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: data.base_experience }]
+                    [...PokemonsStore.allPokemons, { name: res.data.name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: res.data.base_experience }]
                 );
+                console.log(PokemonsStore.addPokemon)
+       
             })
-            PageStore.setPage(PageStore.currentPage + 1);
             setPreviousUrl(data.previous);
             setNextUrl(data.next);
             navigate(`/${PageStore.currentPage}`);
@@ -77,16 +82,15 @@ const App = observer(() => {
     useEffect(() => {
         const currentId = Number(window.location.pathname.slice(1));
         PageStore.setPage(currentId);
+        const dataToPush = [];
         const getData = async () => {
             try {
-                PokemonsStore.clearDataOfPokemons();
-                console.log('fgf')
                 const { data } = await axios.get(`${BASE_URL}pokemon?offset=${PageStore.currentOffset}&limit=${PageStore.currentLimit}`);
                 data.results.forEach(async (pokemon, index) => {
-                    const res = await axios.get(`${BASE_URL}pokemon/${index + 1}`);
-                    PokemonsStore.setPokemons(
-                        [...PokemonsStore.allPokemons, { name: data.results[index].name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: res.data.base_experience }]
-                    );
+                    const currentPokemonId = Number(pokemon.url.split('/pokemon/')[1].replace('/', ''));
+                    const res = await axios.get(`${BASE_URL}pokemon/${currentPokemonId}`);
+                    dataToPush.push({ name: res.data.name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: res.data.base_experience })
+                    PokemonsStore.setPokemons(dataToPush)
                 })
                 if (data.next) {
                     setNextUrl(data.next);
@@ -101,7 +105,7 @@ const App = observer(() => {
             }
         }
         getData();
-    }, [limitValue]);
+    }, [PageStore.currentLimit]);
 
     const filteredPokemons = useMemo(() => {
         return PokemonsStore.allPokemons.filter((pokemon) => pokemon.name.toLowerCase().includes(searchValue.toLowerCase()));

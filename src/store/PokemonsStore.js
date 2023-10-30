@@ -11,13 +11,13 @@ class PokemonsStore {
         this._selectedTypes = type;
     };
 
-    clearDataOfPokemons() {
-        this._pokemons = [];
-    }
-
     setPokemons(pokemons) {
         this._pokemons = pokemons;
     };
+
+    addPokemon(pokemon) {
+        this._pokemons.push(pokemon);
+    }
 
     get allPokemons() {
         return toJS(this._pokemons);
