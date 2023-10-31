@@ -19,6 +19,8 @@ const NotFoundContainer = styled.div`
     padding: 30px 30px;
     background-color: black;
     min-height: 100vh;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
 ;`
 
 const NotFoundH2 = styled.h2`
