@@ -1,5 +1,8 @@
 import styled from "styled-components";
 import Card from "../Card/Card";
+import PokemonsStore from "../../store/PokemonsStore";
+import PageStore from "../../store/PageStore";
+import { useEffect, useState } from "react";
 
 const GridContainer = styled.div`
     display: grid;
@@ -31,18 +34,19 @@ const NotFoundH2 = styled.h2`
 `;
 
 const Grid = ({ cardId, allPokemons }) => {
-    // const filteredPokemons = useMemo(() => {
-    //     types.filter((type) => {
-    //         console.log(types)
-    //     })
-    // }, [PokemonsStore.selectedTypes])
+    const [currentData, setCurrentData] = useState()
+    let firstIndex = PageStore.currentOffset
+    let lastIndex = PageStore.currentLimit*PageStore.currentPage;
+    useEffect(() => {
+        setCurrentData(PokemonsStore.allPokemons.splice)
+    }, [])
     return (
         <>
          {
-            allPokemons.length > 0 ?
+            PokemonsStore.allPokemons ?
                 <GridContainer>
                     {
-                        allPokemons.map((pokemon, index) => (
+                            PokemonsStore.allPokemons.map((pokemon, index) => (
                             <Card key={`${cardId}-${index}`} pokemon={pokemon}></Card>
                         ))
                     }

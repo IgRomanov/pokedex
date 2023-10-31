@@ -73,19 +73,19 @@ const Card = observer(({ pokemon }) => {
                 isLoading ?
                     <span className="loader"></span>
                     :
-                    <Avatar src={pokemon.img} alt={pokemon.name}></Avatar>
+                    <Avatar alt={pokemon.name}></Avatar>
             }
             <div>
                 <List>
-                    {
+                    {/* {
                         pokemon.types.map((type, index) => (
                             <ListElement key={`${typeId}-${index}`}>{type.type.name}</ListElement>
                         ))
-                    }
+                    } */}
                 </List>
-                <span>Attack: {pokemon.attack}</span>
+                <span>Attack: </span>
             </div>
-            <PokemonPopup isVisible={isPopupVisible} height={pokemon.height} weight={pokemon.weight} baseExperience={pokemon.baseExperience} />
+            <PokemonPopup isVisible={isPopupVisible}  />
         </CardWrapper>
     )
 })

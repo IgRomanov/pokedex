@@ -83,16 +83,10 @@ const App = observer(() => {
     useEffect(() => {
         const currentId = Number(window.location.pathname.slice(1));
         PageStore.setPage(currentId);
-        const dataToPush = [];
         const getData = async () => {
             try {
-                const { data } = await axios.get(`${BASE_URL}pokemon?offset=${PageStore.currentOffset}&limit=${PageStore.currentLimit}`);
-                await data.results.forEach(async (pokemon, i) => {
-                    const currentPokemonId = Number(pokemon.url.split('/pokemon/')[1].replace('/', ''));
-                    const res = await axios.get(`${BASE_URL}pokemon/${currentPokemonId}`);
-                    dataToPush.push({ name: res.data.name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: res.data.base_experience });
-                    PokemonsStore.setPokemons(dataToPush);
-                })
+                const { data } = await axios.get(`${BASE_URL}pokemon?limit=100000&offset=0`);
+                PokemonsStore.setPokemons(data.results);
                 if (data.next) {
                     PageStore.setNextUrl(data.next);
                 };
@@ -136,7 +130,7 @@ const App = observer(() => {
                 <Route path=":id" element={
                     <main>
                         <Search handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
-                        <Grid cardId={cardId} allPokemons={searchValue.length > 0 || PokemonsStore.selectedTypes.length > 0 ? filteredPokemons : PokemonsStore.allPokemons} limit={PageStore.currentLimit} />
+                        <Grid cardId={cardId} limit={PageStore.currentLimit} />
                         <PaginationList handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
                     </main>
                 } />
