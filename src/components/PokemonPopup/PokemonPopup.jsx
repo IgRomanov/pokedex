@@ -17,16 +17,14 @@ const PopupWrapper = styled.div`
                 opacity ease-in-out .4s;
 `;
 
-
-
 const PokemonPopup = ({ isVisible, height, weight, baseExperience }) => {
     return (
         <PopupWrapper $isVisible={isVisible}>
-            <span>Рост: {height}</span>
-            <span>Вес: {weight}</span>
-            <span>Начальный опыт: {baseExperience}</span>
+            <span>Height: {height}</span>
+            <span>Weight: {weight}</span>
+            <span>Base experience: {baseExperience}</span>
         </PopupWrapper>
     )
 }
 
-export default PokemonPopup
+export default PokemonPopup;

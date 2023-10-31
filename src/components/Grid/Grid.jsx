@@ -1,16 +1,16 @@
 import styled from "styled-components";
 import Card from "../Card/Card";
-import PokemonsStore from "../../store/PokemonsStore";
-import { useMemo } from "react";
-import { useState } from "react";
 
 const GridContainer = styled.div`
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-auto-rows: minmax(100px, auto);
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: minmax(100px, max-content);
     gap: 10px;
     padding: 30px 30px;
     background-color: black;
+    min-height: 100vh;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
 `;
 
 const NotFoundContainer = styled.div`

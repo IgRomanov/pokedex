@@ -1,6 +1,6 @@
-import { useId } from "react";
 import styled from "styled-components";
 import PokemonsStore from "../../store/PokemonsStore";
+import { observer } from "mobx-react-lite";
 
 const NavContainer = styled.nav`
     position: fixed;
@@ -9,6 +9,8 @@ const NavContainer = styled.nav`
     left: 1%;
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     padding: 10px 30px;
 `;
 
@@ -25,8 +27,8 @@ const NavHeader = styled.h4`
     text-align: center;
 `;
 
-const RadioType = styled.input`
-    display: none;
+const CheckboxType = styled.input`
+    cursor: pointer;
 `;
 
 const LabelType = styled.label`
@@ -35,6 +37,9 @@ const LabelType = styled.label`
         text-shadow: 0 0 2px #faba65;
         transition: box-shadow ease-in-out .4s;
         color: #faba65;
+        display: flex;
+        align-items: center;
+        gap: 5px;
     }
     
     &:hover {
@@ -42,23 +47,34 @@ const LabelType = styled.label`
     }
 `;
 
-const AsidePopup = ({ types }) => {
-    const typeId = useId();
+const AsidePopup = observer(({ types }) => {
 
     const handleTypeClick = (e) => {
-        PokemonsStore.setSelectedType([...PokemonsStore.selectedTypes, e.target.value])
+        if (e.target.value === 'reset') {
+            PokemonsStore.setSelectedType([]);
+        } else {
+            if (!e.target.checked) {
+                PokemonsStore.setSelectedType(PokemonsStore.selectedTypes.filter((type) => type !== e.target.value));
+            } else {
+                PokemonsStore.setSelectedType([...PokemonsStore.selectedTypes, e.target.value]);
+            }
+        }
+
     };
 
     return (
         <NavContainer>
             <NavHeader>Search by type:</NavHeader>
-            <TypesUl>
-                {types.map((type, index) => (
-                    <LabelType key={`${type}-${index}`} onChange={handleTypeClick}><RadioType type="radio" name="type" value={type.name} />{type.name}</LabelType>
-                ))}
-            </TypesUl>
+            <form>
+                <TypesUl>
+                    {types.map((type, index) => (
+                        <LabelType key={`${type}-${index}`} onChange={handleTypeClick} ><CheckboxType type="checkbox" name="type" value={type.name} />{type.name}</LabelType>
+                    ))}
+                    <input onClick={handleTypeClick} type="reset" value="reset" />
+                </TypesUl>
+            </form>
         </NavContainer>
     )
-};  
+});
 
 export default AsidePopup;

@@ -1,8 +1,7 @@
 import styled from "styled-components";
-import PokemonsStore from "../../store/PokemonsStore";
-import { useMemo, useState } from "react";
 import PageStore from "../../store/PageStore";
 import { useNavigate } from "react-router-dom";
+import { observer } from "mobx-react-lite";
 
 const SearchWrapper = styled.div`
     background-color: black;
@@ -60,11 +59,12 @@ const RadioInput = styled.input`
     margin-left: 5px;
 `;
 
-const Search = ({ handleSubmitClick, handleSearchChange, setLimitValue, limitValue }) => {
+const Search = observer(({ handleSubmitClick, handleSearchChange, setLimitValue, limitValue }) => {
     const navigate = useNavigate();
 
     const handleLimitChange = (e) => {
         PageStore.setLimit(e.target.value);
+        PageStore.setPreviousUrl('');
         setLimitValue(Number(e.target.value));
         navigate("/1");
     };
@@ -79,7 +79,7 @@ const Search = ({ handleSubmitClick, handleSearchChange, setLimitValue, limitVal
             </SearchForm>
             <LimitContainer>
                 <h4>Cards per page:</h4>
-                <RadioUl>
+                <RadioUl>   
                     <li>10<RadioInput type="radio" value={10} name="limit" onChange={handleLimitChange} checked={limitValue === 10 ? true : false} /></li>
                     <li>20<RadioInput type="radio" value={20} name="limit" onChange={handleLimitChange} checked={limitValue === 20 ? true : false} /></li>
                     <li>50<RadioInput type="radio" value={50} name="limit" onChange={handleLimitChange} checked={limitValue === 50 ? true : false} /></li>
@@ -87,6 +87,6 @@ const Search = ({ handleSubmitClick, handleSearchChange, setLimitValue, limitVal
             </LimitContainer>
         </SearchWrapper>
     )
-};
+});
 
 export default Search;

@@ -1,10 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import styled from "styled-components";
-import { BASE_URL } from "../../utils/const";
 import axios from "axios";
 import PokemonPopup from "../PokemonPopup/PokemonPopup";
-import PokemonsStore from "../../store/PokemonsStore";
-import { useMemo } from "react";
 import { observer } from "mobx-react-lite";
 
 const CardWrapper = styled.div`
@@ -18,7 +15,6 @@ const CardWrapper = styled.div`
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
-        height: 240px;
         cursor: pointer;
         color: black;
         transition: background-color ease-in-out .4s,
@@ -48,7 +44,7 @@ const Avatar = styled.img`
     height: 100px;
 `
 
-const Card = observer(({pokemon}) => {
+const Card = observer(({ pokemon }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [img, setImg] = useState('');
     const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -68,7 +64,7 @@ const Card = observer(({pokemon}) => {
             }
         }
         getImgs();
-    },[])
+    }, [])
 
     return (
         <CardWrapper onMouseEnter={() => setIsPopupVisible(true)} onMouseLeave={() => setIsPopupVisible(false)}>
@@ -87,7 +83,7 @@ const Card = observer(({pokemon}) => {
                         ))
                     }
                 </List>
-                <span>Атака: {pokemon.attack}</span>
+                <span>Attack: {pokemon.attack}</span>
             </div>
             <PokemonPopup isVisible={isPopupVisible} height={pokemon.height} weight={pokemon.weight} baseExperience={pokemon.baseExperience} />
         </CardWrapper>
