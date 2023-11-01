@@ -26,6 +26,7 @@ const App = observer(() => {
     const paginationId = useId();
 
     const handleSearchChange = (e) => {
+        PokemonsStore.setCurrentMode('search');
         setSearchValue(e.target.value);
     };
 
@@ -100,8 +101,29 @@ const App = observer(() => {
             .then((data) => {
                 PokemonsStore.setPokemons(data.results.filter(pokemon => pokemon.name.includes(searchData)));
             })
+            if (selectedTypes.length > 0) {
+                let pokes = [];
+                let pokeNames = []
+                selectedTypes.forEach((type) => {
+                    axios.get(`${BASE_URL}type/${type}`)
+                    .then(res => res.data.pokemon)
+                    .then((pokemon) => {
+                        pokemon.forEach((pokemonName) => {
+                            PokemonsStore.setPokemons(PokemonsStore.allPokemons.filter(pokemon => pokemon.name === pokemonName.pokemon.name))
+                        })
+                    })
+                })
+                // console.log(pokeNames[0])
+                // PokemonsStore.setPokemons(PokemonsStore.allPokemons.filter(pokemon => pokeNames.includes(pokemon.name)))
+                // console.log(Array(pokes))
+                // pokes.forEach((pokemon) => {
+                //     console.log(pokemon)
+                // });
+              
+                
+            }
         }
-    }, [searchData]);
+    }, [searchData, selectedTypes]);
 
     useEffect(() => {
         axios.get(`${BASE_URL}type`)

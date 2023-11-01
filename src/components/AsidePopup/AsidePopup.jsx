@@ -58,47 +58,15 @@ const AsidePopup = observer(({ types, setCurrentData, currentData, setSelectedTy
         if (e.target.value === 'reset') {
             PokemonsStore.setSelectedType([]);
             PokemonsStore.setCurrentMode('list');
-            const getData = async () => {
-                 try {
-                     const { data } = await axios.get(`${BASE_URL}pokemon?limit=${PageStore.currentLimit}}&offset=${PageStore.currentOffset}}`);
-                     PokemonsStore.setPokemons(data.results);
-                     if (data.next) {
-                         PageStore.setNextUrl(data.next);
-                     };
-                     if (data.previous) {
-                         PageStore.setPreviousUrl(data.previous);
-                     };
-                 } catch (e) {
-                    console.log(e);
-                 }
-            }
-            getData();
         } else {
             PokemonsStore.setCurrentMode('search');
             if (!e.target.checked) {
-                const filteredTypes = selectedTypes.filter((type) => type !== e.target.value);
-                if (filteredTypes.length > 0) {
-                    setSelectedTypes(selectedTypes.filter((type) => type !== e.target.value));
-                } else {
-                    PokemonsStore.setCurrentMode('list');
-                    const getData = async () => {
-                        try {
-                            const { data } = await axios.get(`${BASE_URL}pokemon?limit=${PageStore.currentLimit}}&offset=${PageStore.currentOffset}}`);
-                            PokemonsStore.setPokemons(data.results);
-                            if (data.next) {
-                                PageStore.setNextUrl(data.next);
-                            };
-                            if (data.previous) {
-                                PageStore.setPreviousUrl(data.previous);
-                            };
-                        } catch (e) {
-                            console.log(e);
-                        }
-                    }
-                    getData();
-                }
+                const filteredTypes = selectedTypes.filter((type) => type !== e.target.value);       
+                setSelectedTypes(filteredTypes);
+                PokemonsStore.setSelectedType(filteredTypes);
             } else {
-                setSelectedTypes([...selectedTypes, e.target.value]);
+                setSelectedTypes([...selectedTypes, e.target.value])
+                PokemonsStore.setSelectedType([...selectedTypes, e.target.value]);
             }
         }
 
