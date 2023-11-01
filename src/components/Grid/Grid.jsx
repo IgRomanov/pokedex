@@ -3,6 +3,7 @@ import Card from "../Card/Card";
 import PokemonsStore from "../../store/PokemonsStore";
 import PageStore from "../../store/PageStore";
 import { useEffect, useState } from "react";
+import { observer } from "mobx-react-lite";
 
 const GridContainer = styled.div`
     display: grid;
@@ -33,29 +34,26 @@ const NotFoundH2 = styled.h2`
     font-size: 50px;
 `;
 
-const Grid = ({ cardId, allPokemons }) => {
-    const [currentData, setCurrentData] = useState()
-    let firstIndex = PageStore.currentOffset
-    let lastIndex = PageStore.currentLimit*PageStore.currentPage;
-    useEffect(() => {
-        setCurrentData(PokemonsStore.allPokemons.splice)
-    }, [])
+const Grid = observer(({ cardId }) => {
     return (
         <>
-         {
-            PokemonsStore.allPokemons ?
-                <GridContainer>
-                    {
-                            PokemonsStore.allPokemons.map((pokemon, index) => (
-                            <Card key={`${cardId}-${index}`} pokemon={pokemon}></Card>
-                        ))
-                    }
-                </GridContainer>
-            :
-                <NotFoundContainer><NotFoundH2>Not found</NotFoundH2></NotFoundContainer>
-         }
+            {
+                PokemonsStore.allPokemons.length > 0 ?
+                    <GridContainer>
+                        {
+                            (PokemonsStore.currentMode === 'search' ? PokemonsStore.allPokemons.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : PokemonsStore.allPokemons).map((pokemon, index) => {
+                                return (
+                                    <Card key={`${cardId}-${index}`} pokemon={pokemon}></Card>
+                                )
+
+                            })
+                        }
+                    </GridContainer>
+                    :
+                    <NotFoundContainer><NotFoundH2>Not found</NotFoundH2></NotFoundContainer>
+            }
         </>
-    )   
-};
+    )
+});
 
 export default Grid;

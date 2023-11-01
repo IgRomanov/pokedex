@@ -45,47 +45,60 @@ const Avatar = styled.img`
 `
 
 const Card = observer(({ pokemon }) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [img, setImg] = useState('');
-    const [isPopupVisible, setIsPopupVisible] = useState(false);
     const typeId = useId();
+
+    const [cardInfo, updateCardInfo] = useState({
+        img: '',
+        types: [],
+        attack: null,
+    });
+
+    const [popupInfo, updatePopupInfo] = useState({
+        weight: null,
+        height: null,
+        baseExperience: null,
+    });
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [isPopupVisible, setIsPopupVisible] = useState(false);
 
     useEffect(() => {
         setIsLoading(true);
         const getImgs = async () => {
             try {
-                const { data } = await axios.get(pokemon.img);
-                setImg(`data:image/jpg;base64${data}`);
+                const { data } = await axios.get(pokemon.url);
+                updateCardInfo({ img: data.sprites.front_default, types: data.types, attack: data.stats[1].base_stat });
+                updatePopupInfo({ weight: data.weight, height: data.height, baseExperience: data.base_experience })
             } catch (e) {
                 console.log(e);
                 setIsLoading(true);
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
         getImgs();
-    }, [])
+    }, [pokemon]);
 
     return (
-        <CardWrapper onMouseEnter={() => setIsPopupVisible(true)} onMouseLeave={() => setIsPopupVisible(false)}>
+        <CardWrapper onClick={() => setIsPopupVisible(!isPopupVisible)}>
             <h2>{pokemon.name}</h2>
             {
                 isLoading ?
                     <span className="loader"></span>
                     :
-                    <Avatar alt={pokemon.name}></Avatar>
+                    <Avatar src={cardInfo.img} alt={pokemon.name}></Avatar>
             }
             <div>
                 <List>
-                    {/* {
-                        pokemon.types.map((type, index) => (
+                    {
+                        cardInfo.types.map((type, index) => (
                             <ListElement key={`${typeId}-${index}`}>{type.type.name}</ListElement>
                         ))
-                    } */}
+                    }
                 </List>
-                <span>Attack: </span>
+                <span>Attack: {cardInfo.attack}</span>
             </div>
-            <PokemonPopup isVisible={isPopupVisible}  />
+            <PokemonPopup isVisible={isPopupVisible} popupInfo={popupInfo} />
         </CardWrapper>
     )
 })

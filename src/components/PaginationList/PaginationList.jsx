@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import PageStore from "../../store/PageStore";
+import PokemonsStore from "../../store/PokemonsStore";
 import { observer } from "mobx-react-lite";
 
 const PaginationListStyle = styled.ul`
@@ -31,15 +32,31 @@ const ButtonAction = styled.button`
 `;
 
 
-const PaginationList = observer(({ handlePreviousClick, paginationId, handleNextClick, disabledNext, disabledPrevious}) => {
+const PaginationList = observer(({ handlePreviousClick, paginationId, handleNextClick, disabledNext, disabledPrevious }) => {
+    const currentId = Number(window.location.pathname.slice(1));
+    const lastPage = PokemonsStore.allPokemons.length / PageStore.currentLimit;
     return (
         <PaginationListStyle>
-            <li>
-                <ButtonAction disabled={!PageStore.previousUrl ? true : ''} onClick={handlePreviousClick}>Previous</ButtonAction>
-            </li>
-            <li>
-                <ButtonAction disabled={!PageStore.nextUrl ? true : ''} onClick={handleNextClick}>Next</ButtonAction>
-            </li>
+            {
+                PokemonsStore.currentMode === 'list' ?
+                    <>
+                        <li>
+                            <ButtonAction disabled={!PageStore.previousUrl ? true : ''} onClick={handlePreviousClick}>Previous</ButtonAction>
+                        </li>
+                        <li>
+                            <ButtonAction disabled={!PageStore.nextUrl ? true : ''} onClick={handleNextClick}>Next</ButtonAction>
+                        </li>
+                    </>
+                    :
+                    <>
+                        <li>
+                            <ButtonAction disabled={currentId === 1 ? true : ''} onClick={handlePreviousClick}>Previous</ButtonAction>
+                        </li>
+                        <li>
+                            <ButtonAction disabled={currentId >= lastPage ? true : ''} onClick={handleNextClick}>Next</ButtonAction>
+                        </li>
+                    </>
+            }
         </PaginationListStyle>
     )
 });

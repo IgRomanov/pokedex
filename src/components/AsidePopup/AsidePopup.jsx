@@ -1,6 +1,10 @@
 import styled from "styled-components";
 import PokemonsStore from "../../store/PokemonsStore";
 import { observer } from "mobx-react-lite";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { BASE_URL } from "../../utils/const";
+import PageStore from "../../store/PageStore";
 
 const NavContainer = styled.nav`
     position: fixed;
@@ -47,16 +51,54 @@ const LabelType = styled.label`
     }
 `;
 
-const AsidePopup = observer(({ types }) => {
+const AsidePopup = observer(({ types, setCurrentData, currentData, setSelectedTypes, selectedTypes }) => {
+    const [currentRendering, setCurrentRendering] = useState(PokemonsStore.allPokemons);
 
     const handleTypeClick = (e) => {
         if (e.target.value === 'reset') {
             PokemonsStore.setSelectedType([]);
+            PokemonsStore.setCurrentMode('list');
+            const getData = async () => {
+                 try {
+                     const { data } = await axios.get(`${BASE_URL}pokemon?limit=${PageStore.currentLimit}}&offset=${PageStore.currentOffset}}`);
+                     PokemonsStore.setPokemons(data.results);
+                     if (data.next) {
+                         PageStore.setNextUrl(data.next);
+                     };
+                     if (data.previous) {
+                         PageStore.setPreviousUrl(data.previous);
+                     };
+                 } catch (e) {
+                    console.log(e);
+                 }
+            }
+            getData();
         } else {
+            PokemonsStore.setCurrentMode('search');
             if (!e.target.checked) {
-                PokemonsStore.setSelectedType(PokemonsStore.selectedTypes.filter((type) => type !== e.target.value));
+                const filteredTypes = selectedTypes.filter((type) => type !== e.target.value);
+                if (filteredTypes.length > 0) {
+                    setSelectedTypes(selectedTypes.filter((type) => type !== e.target.value));
+                } else {
+                    PokemonsStore.setCurrentMode('list');
+                    const getData = async () => {
+                        try {
+                            const { data } = await axios.get(`${BASE_URL}pokemon?limit=${PageStore.currentLimit}}&offset=${PageStore.currentOffset}}`);
+                            PokemonsStore.setPokemons(data.results);
+                            if (data.next) {
+                                PageStore.setNextUrl(data.next);
+                            };
+                            if (data.previous) {
+                                PageStore.setPreviousUrl(data.previous);
+                            };
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }
+                    getData();
+                }
             } else {
-                PokemonsStore.setSelectedType([...PokemonsStore.selectedTypes, e.target.value]);
+                setSelectedTypes([...selectedTypes, e.target.value]);
             }
         }
 

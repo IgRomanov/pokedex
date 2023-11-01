@@ -17,7 +17,8 @@ const PopupWrapper = styled.div`
                 opacity ease-in-out .4s;
 `;
 
-const PokemonPopup = ({ isVisible, height, weight, baseExperience }) => {
+const PokemonPopup = ({ isVisible, popupInfo }) => {
+    const { height, weight, baseExperience } = popupInfo;
     return (
         <PopupWrapper $isVisible={isVisible}>
             <span>Height: {height}</span>

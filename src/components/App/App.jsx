@@ -11,15 +11,17 @@ import Grid from "../Grid/Grid";
 import Search from '../Search/Search';
 import AsidePopup from '../AsidePopup/AsidePopup';
 import { observer } from 'mobx-react-lite';
-import { filterBySearch, filterByTypes, filterByParams } from '../../utils/const';
+import { useDebounce } from "../../hooks/useDebounce";
 
 const App = observer(() => {
     const navigate = useNavigate();
-
+    const [currentData, setCurrentData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
     const [limitValue, setLimitValue] = useState(PageStore.currentLimit);
     const [types, setTypes] = useState([]);
-    const cardId = useId();
+    const [selectedTypes, setSelectedTypes] = useState([]);
+    const searchData = useDebounce(searchValue, 1000);
+
     const paginationId = useId();
 
     const handleSearchChange = (e) => {
@@ -36,82 +38,110 @@ const App = observer(() => {
     };
 
     const handlePreviousClick = async () => {
-        resetFilter();
         try {
-            const dataToPush = [];
             PageStore.setPage(PageStore.currentPage - 1);
-            const { data } = await axios.get(PageStore.previousUrl);
-            data.results.forEach(async (pokemon, index) => {
-                const currentPokemonId = Number(pokemon.url.split('/pokemon/')[1].replace('/', ''));
-                const res = await axios.get(`${BASE_URL}pokemon/${currentPokemonId}`);
-                dataToPush.push({ name: res.data.name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: res.data.base_experience })
-                PokemonsStore.setPokemons(dataToPush);
-            })
-            PageStore.setPreviousUrl(data.previous);
-            PageStore.setNextUrl(data.next);
-            navigate(`/${PageStore.currentPage}`);
-            if (data.previous) {
+            if (PokemonsStore.currentMode !== 'search') {
+                const { data } = await axios.get(PageStore.previousUrl);
+                PokemonsStore.setPokemons(data.results);
                 PageStore.setPreviousUrl(data.previous);
-            };
+                PageStore.setNextUrl(data.next);
+                if (data.previous) {
+                    PageStore.setPreviousUrl(data.previous);
+                };
+            } 
+            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
     };
 
     const handleNextClick = async () => {
-        resetFilter();
         try {
-            const dataToPush = [];
             PageStore.setPage(PageStore.currentPage + 1);
-            const { data } = await axios.get(PageStore.nextUrl);
-            data.results.forEach(async (pokemon, index) => {
-                const currentPokemonId = Number(pokemon.url.split('/pokemon/')[1].replace('/', ''));
-                const res = await axios.get(`${BASE_URL}pokemon/${currentPokemonId}`);
-                dataToPush.push({ name: res.data.name, types: res.data.types, img: res.data.sprites.front_default, weight: res.data.weight, height: res.data.height, attack: res.data.stats[1].base_stat, baseExperience: res.data.base_experience })
-                PokemonsStore.setPokemons(dataToPush);
-            })
-            PageStore.setPreviousUrl(data.previous);
-            PageStore.setNextUrl(data.next);
-            navigate(`/${PageStore.currentPage}`);
-            if (data.next) {
+            if (PokemonsStore.currentMode !== 'search') {
+                setCurrentData([]);
+                const { data } = await axios.get(PageStore.nextUrl);
+                PokemonsStore.setPokemons(data.results);
+                PageStore.setPreviousUrl(data.previous);
                 PageStore.setNextUrl(data.next);
-            };
+                if (data.next) {
+                    PageStore.setNextUrl(data.next);
+                };
+            }
+            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
     };
     useEffect(() => {
-        const currentId = Number(window.location.pathname.slice(1));
-        PageStore.setPage(currentId);
-        const getData = async () => {
-            try {
-                const { data } = await axios.get(`${BASE_URL}pokemon?limit=100000&offset=0`);
-                PokemonsStore.setPokemons(data.results);
-                if (data.next) {
-                    PageStore.setNextUrl(data.next);
-                };
-                if (data.previous) {
-                    PageStore.setPreviousUrl(data.previous);
-                };
+        if (searchValue === '') {
+            const currentId = Number(window.location.pathname.slice(1));
+            PageStore.setPage(currentId);
+            const getData = async () => {
+                try {
+                    const { data } = await axios.get(`${BASE_URL}pokemon?limit=${PageStore.currentLimit}}&offset=${PageStore.currentOffset}}`);
+                    PokemonsStore.setPokemons(data.results);
+                    if (data.next) {
+                        PageStore.setNextUrl(data.next);
+                    };
+                    if (data.previous) {
+                        PageStore.setPreviousUrl(data.previous);
+                    };
 
+                }
+                catch (e) {
+                    console.log(e);
+                }
             }
-            catch (e) {
+            getData();
+        }
+    }, [searchValue]);
+
+    useEffect(() => {
+        const getPokemonsByType = async (type) => {
+            try {
+                let dataNames = [];
+                const { data } = await axios.get(`${BASE_URL}type/${type}`);
+                data.pokemon.forEach((pokemon) => {
+                    dataNames.push(pokemon.pokemon.name);
+                });
+                if (PokemonsStore.allLightData.length === 0) {
+                    const { data } = await axios.get(`${BASE_URL}pokemon?limit=100000&offset=0.`);
+                    PokemonsStore.setPokemons(data.results);
+                    PokemonsStore.setPokemons(PokemonsStore.allPokemons.filter(pokemon => dataNames.includes(pokemon.name)));
+                }
+
+            } catch (e) {
                 console.log(e);
             }
         }
-        getData();
-    }, [PageStore.currentLimit]);
+        selectedTypes.forEach((type) => {
+            getPokemonsByType(type);
+        });
 
-    const filteredPokemons = useMemo(() => {
-        if (PokemonsStore.selectedTypes.length > 0 & searchValue.length > 0) {
-            let filtredTasks = filterBySearch(PokemonsStore.allPokemons, searchValue);
-            return filterByTypes(filtredTasks, PokemonsStore.selectedTypes);
-        } else if (PokemonsStore.selectedTypes.length > 0) {
-            return filterByTypes(PokemonsStore.allPokemons, PokemonsStore.selectedTypes);
-        } else if (searchValue.length > 0) {
-            return filterBySearch(PokemonsStore.allPokemons, searchValue);
+    }, [selectedTypes])
+
+    useEffect(() => {
+        const getAllData = async (limit = 100000, offset = 0) => {
+            try {
+                const { data } = await axios.get(`${BASE_URL}pokemon?limit=${limit}&offset=${offset}.`);
+                PokemonsStore.setAllLightData(data.results);
+                PokemonsStore.setPokemons(PokemonsStore.allLightData.filter(pokemon => pokemon.name.includes(searchData)))
+
+                // PokemonsStore.setPokemons(data.results);
+                // PokemonsStore.setPokemons(PokemonsStore.allPokemons.filter(pokemon => pokemon.name.includes(searchData)));
+                PokemonsStore.setCurrentMode('search');
+                navigate("/1");
+            } catch (e) {
+                console.log(e);
+            }
         }
-    }, [searchValue, PokemonsStore.selectedTypes]);
+        if (searchData !== '') {
+            getAllData();
+        } else {
+            PokemonsStore.setCurrentMode('list');
+        }
+    }, [searchData])
 
     useEffect(() => {
         axios.get(`${BASE_URL}type`)
@@ -129,13 +159,13 @@ const App = observer(() => {
             <Routes>
                 <Route path=":id" element={
                     <main>
-                        <Search handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
-                        <Grid cardId={cardId} limit={PageStore.currentLimit} />
+                        <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
+                        <Grid setCurrentData={setCurrentData} currentData={currentData} limit={PageStore.currentLimit} />
                         <PaginationList handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
                     </main>
                 } />
             </Routes>
-            <AsidePopup types={types} />
+            <AsidePopup types={types} setCurrentData={setCurrentData} currentData={currentData} setSelectedTypes={setSelectedTypes} selectedTypes={selectedTypes}/>
         </div>
     )
 })
