@@ -46,6 +46,19 @@ const Avatar = styled.img`
 `
 
 const Card = observer(({ pokemon }) => {
+    const getImgs = async () => {
+        try {
+            const { data } = await axios.get(pokemon.url);
+            updateCardInfo({ img: data.sprites.front_default, types: data.types, attack: data.stats[1].base_stat });
+            updatePopupInfo({ weight: data.weight, height: data.height, baseExperience: data.base_experience })
+        } catch (e) {
+            console.log(e);
+            setIsLoading(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const typeId = useId();
 
     const [cardInfo, updateCardInfo] = useState({
@@ -69,18 +82,6 @@ const Card = observer(({ pokemon }) => {
 
     useEffect(() => {
         setIsLoading(true);
-        const getImgs = async () => {
-            try {
-                const { data } = await axios.get(pokemon.url);
-                updateCardInfo({ img: data.sprites.front_default, types: data.types, attack: data.stats[1].base_stat });
-                updatePopupInfo({ weight: data.weight, height: data.height, baseExperience: data.base_experience })
-            } catch (e) {
-                console.log(e);
-                setIsLoading(true);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         getImgs();
     }, [pokemon, PokemonsStore.selectedTypes]);
 
@@ -91,7 +92,7 @@ const Card = observer(({ pokemon }) => {
                 isLoading ?
                     <span className="loader"></span>
                     :
-                    <Avatar src={cardInfo.img} alt={pokemon.name}></Avatar>
+                    <Avatar src={cardInfo.img} alt={pokemon.name} loading="lazy"></Avatar>
             }
             <div>
                 <List>
