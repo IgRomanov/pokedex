@@ -15,6 +15,7 @@ import { useDebounce } from "../../hooks/useDebounce";
 import { getAllData } from '../../utils/api';
 
 const App = observer(() => {
+    const mySet1 = new Set();
     const navigate = useNavigate();
     const [currentData, setCurrentData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
@@ -54,7 +55,9 @@ const App = observer(() => {
                         PageStore.setPreviousUrl(data.previous);
                     };
                 })
-            } 
+            }
+            PageStore.setPage(PageStore.currentPage - 1);
+            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
@@ -77,6 +80,8 @@ const App = observer(() => {
                     };
                 })
             }
+            PageStore.setPage(PageStore.currentPage + 1);
+            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
@@ -102,11 +107,31 @@ const App = observer(() => {
         } else if (PokemonsStore.currentMode === 'search') {
             getAllData()
             .then(res => res.data)
-            .then((data) => {
-                PokemonsStore.setPokemons(data.results.filter(pokemon => pokemon.name.includes(searchData)));
+            .then((allData) => {
+                let allNames = [];
+                let names = PokemonsStore.allPokemons.map(pokemon => pokemon.name);
+                PokemonsStore.selectedTypes.forEach((type) => {
+                    axios.get(`${BASE_URL}type/${type}`)
+                    .then(res => res.data)
+                    .then((data) => {
+                        let names = data.pokemon.map(pokemon => pokemon.pokemon.name)
+                        console.log('sdf')
+                        PokemonsStore.setPokemons(allData.results
+                            .filter(pokemon => names.includes(pokemon.name))
+                            .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
+                    })                    
+                })
+             
+                // PokemonsStore.setPokemons(allData.results.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
             })
+            
         }
-    }, [searchData, PokemonsStore.selectedTypes]);
+    }, [searchData, PokemonsStore.selectedTypes]);  
+
+    useEffect(() => {
+    }, [selectedTypes])
+
+   
 
     useEffect(() => {
         axios.get(`${BASE_URL}type`)

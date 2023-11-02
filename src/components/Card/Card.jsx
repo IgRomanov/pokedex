@@ -3,6 +3,7 @@ import styled from "styled-components";
 import axios from "axios";
 import PokemonPopup from "../PokemonPopup/PokemonPopup";
 import { observer } from "mobx-react-lite";
+import PokemonsStore from "../../store/PokemonsStore";
 
 const CardWrapper = styled.div`
     & {
@@ -81,7 +82,7 @@ const Card = observer(({ pokemon }) => {
             }
         };
         getImgs();
-    }, [pokemon]);
+    }, [pokemon, PokemonsStore.selectedTypes]);
 
     return (
         <CardWrapper onClick={handleCardCLick}>
