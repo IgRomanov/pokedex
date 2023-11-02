@@ -21,6 +21,7 @@ const App = observer(() => {
     const [limitValue, setLimitValue] = useState(PageStore.currentLimit);
     const [types, setTypes] = useState([]);
     const [namesByType, setNamesByType] = useState([]);
+    const [allData, setAlldata] = useState([]);
     const searchData = useDebounce(searchValue, 1000);
 
     const paginationId = useId();
@@ -37,7 +38,7 @@ const App = observer(() => {
     const handlePreviousClick = async () => {
         try {
             if (PokemonsStore.currentMode !== 'search') {
-               const { data } = await axios.get(PageStore.previousUrl)
+                const { data } = await axios.get(PageStore.previousUrl)
                 PageStore.setPage(PageStore.currentPage - 1);
                 PokemonsStore.setPokemons(data.results);
                 PageStore.setPreviousUrl(data.previous);
@@ -66,7 +67,7 @@ const App = observer(() => {
                 navigate(`/${PageStore.currentPage}`);
                 if (data.next) {
                     PageStore.setNextUrl(data.next);
-                };  
+                };
             };
             PageStore.setPage(PageStore.currentPage + 1);
             navigate(`/${PageStore.currentPage}`);
@@ -87,7 +88,7 @@ const App = observer(() => {
                     if (data.previous) {
                         PageStore.setPreviousUrl(data.previous);
                     };
-                } catch(e) {
+                } catch (e) {
                     console.log(e);
                 }
             }
@@ -96,30 +97,41 @@ const App = observer(() => {
             const getDataByType = async () => {
                 try {
                     const { data } = await getAllData();
-                    if (PokemonsStore.selectedTypes.length > 0) {
-                        PokemonsStore.selectedTypes.forEach((type) => {
-                            axios.get(`${BASE_URL}type/${type}`)
-                                .then(res => res.data)
-                                .then((dataOfType) => {
-                                    let names = dataOfType.pokemon.map(pokemon => pokemon.pokemon.name);
-                                    setNamesByType([...namesByType, ...names]);
-                                    
-                                })
-                        })
-                        PokemonsStore.setPokemons(data.results
-                            .filter(pokemon => namesByType.includes(pokemon.name))
-                            .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
-                    } else {
-                        PokemonsStore.setPokemons(data.results.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
-                    }
+                    PokemonsStore.setPokemons(data.results);
+                    setAlldata(data.results)
                 } catch (e) {
                     console.log(e)
                 }
             }
-            getDataByType()         
+            getDataByType()
         }
-    }, [searchData, PokemonsStore.selectedTypes]);  
-   
+    }, [PokemonsStore.currentMode]);
+
+    useEffect(() => {
+        if (PokemonsStore.selectedTypes.length > 0) {
+            PokemonsStore.selectedTypes.forEach((type) => {
+                axios.get(`${BASE_URL}type/${type}`)
+                    .then(res => res.data)
+                    .then((dataOfType) => {
+                        let names = dataOfType.pokemon.map(pokemon => pokemon.pokemon.name);
+                        setNamesByType([...namesByType, ...names]);
+
+                    })
+            })
+
+        }
+    }, [PokemonsStore.selectedTypes])
+
+    useEffect(() => {
+        if (PokemonsStore.selectedTypes.length > 0) {
+            PokemonsStore.setPokemons(allData
+                .filter(pokemon => namesByType.includes(pokemon.name))
+                .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
+        } else {
+            PokemonsStore.setPokemons(allData.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
+        }
+    }, [namesByType, searchData]);
+
     useEffect(() => {
         const getTypes = async () => {
             try {

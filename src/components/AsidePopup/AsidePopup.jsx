@@ -51,7 +51,6 @@ const AsidePopup = observer(({ types }) => {
 
     const handleTypeClick = (e) => {
         if (e.target.value === 'reset') {
-            PokemonsStore.setSelectedType([]);
             PokemonsStore.setCurrentMode('list');
         } else {
             PokemonsStore.setCurrentMode('search');
