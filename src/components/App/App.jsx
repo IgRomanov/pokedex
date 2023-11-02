@@ -119,18 +119,20 @@ const App = observer(() => {
                     })
             })
 
+        } else {
+            setNamesByType([])
         }
     }, [PokemonsStore.selectedTypes])
 
     useEffect(() => {
-        if (PokemonsStore.selectedTypes.length > 0) {
+        if (namesByType.length > 0) {
             PokemonsStore.setPokemons(allData
                 .filter(pokemon => namesByType.includes(pokemon.name))
                 .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
         } else {
             PokemonsStore.setPokemons(allData.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
         }
-    }, [namesByType, searchData]);
+    }, [namesByType, searchData, allData]);
 
     useEffect(() => {
         const getTypes = async () => {
@@ -155,7 +157,7 @@ const App = observer(() => {
                     </main>
                 } />
             </Routes>
-            <AsidePopup types={types} />
+            <AsidePopup types={types} setNamesByType={setNamesByType} />
         </div>
     )
 })

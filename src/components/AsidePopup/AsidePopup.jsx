@@ -47,7 +47,7 @@ const LabelType = styled.label`
     }
 `;
 
-const AsidePopup = observer(({ types }) => {
+const AsidePopup = observer(({ types, setNamesByType }) => {
 
     const handleTypeClick = (e) => {
         if (e.target.value === 'reset') {
@@ -56,6 +56,7 @@ const AsidePopup = observer(({ types }) => {
             PokemonsStore.setCurrentMode('search');
             if (!e.target.checked) {
                 PokemonsStore.setSelectedType(PokemonsStore.selectedTypes.filter((type) => type !== e.target.value));
+                setNamesByType([])
             } else {
                 PokemonsStore.setSelectedType([...PokemonsStore.selectedTypes, e.target.value]);
             }
