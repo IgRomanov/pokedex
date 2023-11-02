@@ -2,10 +2,6 @@ import styled from "styled-components";
 import PageStore from "../../store/PageStore";
 import { useNavigate } from "react-router-dom";
 import { observer } from "mobx-react-lite";
-import { useEffect } from "react";
-import axios from "axios";
-import { BASE_URL } from "../../utils/const";
-import PokemonsStore from "../../store/PokemonsStore";
 
 const SearchWrapper = styled.div`
     background-color: black;
@@ -68,6 +64,7 @@ const Search = observer(({ searchValue, handleSubmitClick, handleSearchChange, s
     const handleLimitChange = (e) => {
         PageStore.setLimit(e.target.value);
         PageStore.setPreviousUrl('');
+        PageStore.setPage(1);
         setLimitValue(Number(e.target.value));
         navigate("/1");
     };

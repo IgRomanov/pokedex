@@ -1,10 +1,6 @@
 import styled from "styled-components";
 import PokemonsStore from "../../store/PokemonsStore";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { BASE_URL } from "../../utils/const";
-import PageStore from "../../store/PageStore";
 
 const NavContainer = styled.nav`
     position: fixed;
@@ -51,8 +47,7 @@ const LabelType = styled.label`
     }
 `;
 
-const AsidePopup = observer(({ types, setCurrentData, currentData, setSelectedTypes, selectedTypes }) => {
-    const [currentRendering, setCurrentRendering] = useState(PokemonsStore.allPokemons);
+const AsidePopup = observer(({ types }) => {
 
     const handleTypeClick = (e) => {
         if (e.target.value === 'reset') {
@@ -61,12 +56,9 @@ const AsidePopup = observer(({ types, setCurrentData, currentData, setSelectedTy
         } else {
             PokemonsStore.setCurrentMode('search');
             if (!e.target.checked) {
-                const filteredTypes = selectedTypes.filter((type) => type !== e.target.value);       
-                setSelectedTypes(filteredTypes);
-                PokemonsStore.setSelectedType(filteredTypes);
+                PokemonsStore.setSelectedType(PokemonsStore.selectedTypes.filter((type) => type !== e.target.value));
             } else {
-                setSelectedTypes([...selectedTypes, e.target.value])
-                PokemonsStore.setSelectedType([...selectedTypes, e.target.value]);
+                PokemonsStore.setSelectedType([...PokemonsStore.selectedTypes, e.target.value]);
             }
         }
 

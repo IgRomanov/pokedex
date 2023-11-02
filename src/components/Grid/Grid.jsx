@@ -2,7 +2,6 @@ import styled from "styled-components";
 import Card from "../Card/Card";
 import PokemonsStore from "../../store/PokemonsStore";
 import PageStore from "../../store/PageStore";
-import { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 
 const GridContainer = styled.div`

@@ -41,17 +41,20 @@ const App = observer(() => {
 
     const handlePreviousClick = async () => {
         try {
-            PageStore.setPage(PageStore.currentPage - 1);
             if (PokemonsStore.currentMode !== 'search') {
-                const { data } = await axios.get(PageStore.previousUrl);
-                PokemonsStore.setPokemons(data.results);
-                PageStore.setPreviousUrl(data.previous);
-                PageStore.setNextUrl(data.next);
-                if (data.previous) {
+                await axios.get(PageStore.previousUrl)
+                .then(res => res.data)
+                .then((data) => {
+                    PageStore.setPage(PageStore.currentPage - 1);
+                    PokemonsStore.setPokemons(data.results);
                     PageStore.setPreviousUrl(data.previous);
-                };
+                    PageStore.setNextUrl(data.next);
+                    navigate(`/${PageStore.currentPage}`);
+                    if (data.previous) {
+                        PageStore.setPreviousUrl(data.previous);
+                    };
+                })
             } 
-            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
@@ -59,26 +62,27 @@ const App = observer(() => {
 
     const handleNextClick = async () => {
         try {
-            PageStore.setPage(PageStore.currentPage + 1);
             if (PokemonsStore.currentMode !== 'search') {
                 setCurrentData([]);
-                const { data } = await axios.get(PageStore.nextUrl);
-                PokemonsStore.setPokemons(data.results);
-                PageStore.setPreviousUrl(data.previous);
-                PageStore.setNextUrl(data.next);
-                if (data.next) {
+                await axios.get(PageStore.nextUrl)
+                .then(res => res.data)
+                .then((data) => {
+                    PageStore.setPage(PageStore.currentPage + 1);
+                    PokemonsStore.setPokemons(data.results);
+                    PageStore.setPreviousUrl(data.previous);
                     PageStore.setNextUrl(data.next);
-                };
+                    navigate(`/${PageStore.currentPage}`);
+                    if (data.next) {
+                        PageStore.setNextUrl(data.next);
+                    };
+                })
             }
-            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
     };
 
     useEffect(() => {
-        
-        console.log(PokemonsStore.currentMode)
         if (PokemonsStore.currentMode === 'list') {
             const getData = async () => {
                 try {
@@ -91,7 +95,7 @@ const App = observer(() => {
                         PageStore.setPreviousUrl(data.previous);
                     };
                 } catch(e) {
-                    console.log(e)
+                    console.log(e);
                 }
             }
             getData();
@@ -101,29 +105,8 @@ const App = observer(() => {
             .then((data) => {
                 PokemonsStore.setPokemons(data.results.filter(pokemon => pokemon.name.includes(searchData)));
             })
-            if (selectedTypes.length > 0) {
-                let pokes = [];
-                let pokeNames = []
-                selectedTypes.forEach((type) => {
-                    axios.get(`${BASE_URL}type/${type}`)
-                    .then(res => res.data.pokemon)
-                    .then((pokemon) => {
-                        pokemon.forEach((pokemonName) => {
-                            PokemonsStore.setPokemons(PokemonsStore.allPokemons.filter(pokemon => pokemon.name === pokemonName.pokemon.name))
-                        })
-                    })
-                })
-                // console.log(pokeNames[0])
-                // PokemonsStore.setPokemons(PokemonsStore.allPokemons.filter(pokemon => pokeNames.includes(pokemon.name)))
-                // console.log(Array(pokes))
-                // pokes.forEach((pokemon) => {
-                //     console.log(pokemon)
-                // });
-              
-                
-            }
         }
-    }, [searchData, selectedTypes]);
+    }, [searchData, PokemonsStore.selectedTypes]);
 
     useEffect(() => {
         axios.get(`${BASE_URL}type`)
@@ -147,7 +130,7 @@ const App = observer(() => {
                     </main>
                 } />
             </Routes>
-            <AsidePopup types={types} setCurrentData={setCurrentData} currentData={currentData} setSelectedTypes={setSelectedTypes} selectedTypes={selectedTypes}/>
+            <AsidePopup types={types} />
         </div>
     )
 })

@@ -62,6 +62,10 @@ const Card = observer(({ pokemon }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
 
+    const handleCardCLick = (e) => {
+        setIsPopupVisible(!isPopupVisible);
+    }
+
     useEffect(() => {
         setIsLoading(true);
         const getImgs = async () => {
@@ -80,7 +84,7 @@ const Card = observer(({ pokemon }) => {
     }, [pokemon]);
 
     return (
-        <CardWrapper onClick={() => setIsPopupVisible(!isPopupVisible)}>
+        <CardWrapper onClick={handleCardCLick}>
             <h2>{pokemon.name}</h2>
             {
                 isLoading ?
