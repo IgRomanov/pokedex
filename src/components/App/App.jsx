@@ -12,16 +12,15 @@ import Search from '../Search/Search';
 import AsidePopup from '../AsidePopup/AsidePopup';
 import { observer } from 'mobx-react-lite';
 import { useDebounce } from "../../hooks/useDebounce";
-import { getAllData } from '../../utils/api';
+import { getAllData, getTypes } from '../../utils/api';
 
 const App = observer(() => {
-    const mySet1 = new Set();
     const navigate = useNavigate();
     const [currentData, setCurrentData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
     const [limitValue, setLimitValue] = useState(PageStore.currentLimit);
     const [types, setTypes] = useState([]);
-    const [names, setNames] = useState([]);
+    const [namesByType, setNamesByType] = useState([]);
     const searchData = useDebounce(searchValue, 1000);
 
     const paginationId = useId();
@@ -35,27 +34,19 @@ const App = observer(() => {
         e.preventDefault();
     };
 
-    const resetFilter = () => {
-        setSearchValue('');
-        PokemonsStore.setSelectedType([]);
-    };
-
     const handlePreviousClick = async () => {
         try {
             if (PokemonsStore.currentMode !== 'search') {
-                await axios.get(PageStore.previousUrl)
-                .then(res => res.data)
-                .then((data) => {
-                    PageStore.setPage(PageStore.currentPage - 1);
-                    PokemonsStore.setPokemons(data.results);
+               const { data } = await axios.get(PageStore.previousUrl)
+                PageStore.setPage(PageStore.currentPage - 1);
+                PokemonsStore.setPokemons(data.results);
+                PageStore.setPreviousUrl(data.previous);
+                PageStore.setNextUrl(data.next);
+                navigate(`/${PageStore.currentPage}`);
+                if (data.previous) {
                     PageStore.setPreviousUrl(data.previous);
-                    PageStore.setNextUrl(data.next);
-                    navigate(`/${PageStore.currentPage}`);
-                    if (data.previous) {
-                        PageStore.setPreviousUrl(data.previous);
-                    };
-                })
-            }
+                };
+            };
             PageStore.setPage(PageStore.currentPage - 1);
             navigate(`/${PageStore.currentPage}`);
         } catch (e) {
@@ -67,19 +58,16 @@ const App = observer(() => {
         try {
             if (PokemonsStore.currentMode !== 'search') {
                 setCurrentData([]);
-                await axios.get(PageStore.nextUrl)
-                .then(res => res.data)
-                .then((data) => {
-                    PageStore.setPage(PageStore.currentPage + 1);
-                    PokemonsStore.setPokemons(data.results);
-                    PageStore.setPreviousUrl(data.previous);
+                const { data } = await axios.get(PageStore.nextUrl)
+                PageStore.setPage(PageStore.currentPage + 1);
+                PokemonsStore.setPokemons(data.results);
+                PageStore.setPreviousUrl(data.previous);
+                PageStore.setNextUrl(data.next);
+                navigate(`/${PageStore.currentPage}`);
+                if (data.next) {
                     PageStore.setNextUrl(data.next);
-                    navigate(`/${PageStore.currentPage}`);
-                    if (data.next) {
-                        PageStore.setNextUrl(data.next);
-                    };
-                })
-            }
+                };  
+            };
             PageStore.setPage(PageStore.currentPage + 1);
             navigate(`/${PageStore.currentPage}`);
         } catch (e) {
@@ -91,7 +79,7 @@ const App = observer(() => {
         if (PokemonsStore.currentMode === 'list') {
             const getData = async () => {
                 try {
-                    const { data } = await axios.get(`${BASE_URL}pokemon`);
+                    const { data } = await axios.get(`${BASE_URL}pokemon?offset=${PageStore.currentOffset}&limit=${PageStore.currentLimit}`);
                     PokemonsStore.setPokemons(data.results);
                     if (data.next) {
                         PageStore.setNextUrl(data.next);
@@ -105,40 +93,43 @@ const App = observer(() => {
             }
             getData();
         } else if (PokemonsStore.currentMode === 'search') {
-            getAllData()
-            .then(res => res.data)
-            .then((allData) => {
-                let allNames = [];
-                if (PokemonsStore.selectedTypes.length > 0) {
-                    PokemonsStore.selectedTypes.forEach((type) => {
-                        axios.get(`${BASE_URL}type/${type}`)
-                        .then(res => res.data)
-                        .then((data) => {
-                            let names = data.pokemon.map(pokemon => pokemon.pokemon.name)
-                            console.log('sdf')
-                            PokemonsStore.setPokemons(allData.results
-                                .filter(pokemon => names.includes(pokemon.name))
-                                .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
-                        })                    
-                    })
-                } else {
-                    PokemonsStore.setPokemons(allData.results.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
+            const getDataByType = async () => {
+                try {
+                    const { data } = await getAllData();
+                    if (PokemonsStore.selectedTypes.length > 0) {
+                        PokemonsStore.selectedTypes.forEach((type) => {
+                            axios.get(`${BASE_URL}type/${type}`)
+                                .then(res => res.data)
+                                .then((dataOfType) => {
+                                    let names = dataOfType.pokemon.map(pokemon => pokemon.pokemon.name);
+                                    setNamesByType([...namesByType, ...names]);
+                                    
+                                })
+                        })
+                        PokemonsStore.setPokemons(data.results
+                            .filter(pokemon => namesByType.includes(pokemon.name))
+                            .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
+                    } else {
+                        PokemonsStore.setPokemons(data.results.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
+                    }
+                } catch (e) {
+                    console.log(e)
                 }
-                // PokemonsStore.setPokemons(allData.results.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
-            })
-            
+            }
+            getDataByType()         
         }
     }, [searchData, PokemonsStore.selectedTypes]);  
    
     useEffect(() => {
-        axios.get(`${BASE_URL}type`)
-            .then(res => res.data)
-            .then((data) => {
+        const getTypes = async () => {
+            try {
+                const { data } = await axios.get(`${BASE_URL}type`);
                 setTypes(data.results);
-            })
-            .catch((e) => {
+            } catch (e) {
                 console.log(e);
-            });
+            }
+        };
+        getTypes();
     }, []);
 
     return (

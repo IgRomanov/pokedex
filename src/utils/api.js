@@ -16,3 +16,11 @@ export const getDataWithParams = async (offset, limit) => {
         console.log(e);
     }
 };
+
+export const getType = async (type) => {
+    try {
+        return await axios.get(`${BASE_URL}type/${type}`);
+    } catch (e) {
+        console.log(e);
+    }
+};
