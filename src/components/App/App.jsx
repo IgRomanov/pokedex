@@ -1,27 +1,25 @@
-import './App.css';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import PokemonsStore from '../../store/PokemonsStore';
 import PageStore from '../../store/PageStore';
 import { useId } from 'react';
 import axios from 'axios';
-import PaginationList from "../PaginationList/PaginationList";
-import Grid from "../Grid/Grid";
-import Search from '../Search/Search';
-import AsidePopup from '../AsidePopup/AsidePopup';
+import PaginationList from "../PaginationList";
+import Grid from "../Grid";
+import Search from '../Search';
+import AsidePopup from '../AsidePopup';
 import { observer } from 'mobx-react-lite';
 import { useDebounce } from "../../hooks/useDebounce";
 import { getAllData, getTypes, getDataWithParams, getType } from '../../utils/api';
 
 const App = observer(() => {
-    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [searchValue, setSearchValue] = useState('');
     const [limitValue, setLimitValue] = useState(PageStore.currentLimit);
     const [types, setTypes] = useState([]);
     const [namesByType, setNamesByType] = useState([]);
     const [allData, setAlldata] = useState([]);
-    const [currentMode, setCurrentMode] = useState([]);
-    const [isEmpty, setIsEmpty] = useState(false);
+    const [currentMode, setCurrentMode] = useState('list');
     const searchData = useDebounce(searchValue, 1000);
 
     const paginationId = useId();
@@ -44,7 +42,6 @@ const App = observer(() => {
     const getDataByType = async () => {
         try {
             const { data } = await getAllData();
-            PokemonsStore.setPokemons(data.results);
             setAlldata(data.results);
         } catch (e) {
             console.log(e)
@@ -115,14 +112,6 @@ const App = observer(() => {
     };
 
     useEffect(() => {
-        if (currentMode === 'list') {
-            getData();
-        } else if (currentMode === 'search') {
-            getDataByType();
-        }
-    }, [currentMode]);
-
-    useEffect(() => {
         if (PokemonsStore.selectedTypes.length > 0) {
             PokemonsStore.selectedTypes.forEach((type) => {
                 getCurrentType(type);
@@ -133,12 +122,15 @@ const App = observer(() => {
     }, [PokemonsStore.selectedTypes])
 
     const currentCards = useMemo(() => {
-        if (namesByType.length > 0) {
-            return allData
-                .filter(pokemon => namesByType.includes(pokemon.name))
-                .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase()));
-        } 
-        return allData.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase()));
+        let data = allData;
+        if (namesByType.length > 0) { 
+            data = data.filter(pokemon => namesByType.includes(pokemon.name));
+            console.log(data.length)
+        };
+        if (searchData !== '') {
+            data = data.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase()))
+        };
+        return data;
         
     }, [namesByType, searchData, allData])
 
@@ -147,32 +139,31 @@ const App = observer(() => {
     }, []);
 
     useEffect(() => {
-        if (namesByType === '' && searchData.length === 0) {
-            setCurrentMode('list');
-            PokemonsStore.setCurrentMode('list');
-            PageStore.setPage(1);
-        } else {
-            setCurrentMode('search');
-            PokemonsStore.setCurrentMode('search');
-            PageStore.setPage(1);
-        }
-    }, [namesByType, searchData])
+        const mode = namesByType.length === 0 && searchData === '' ? 'list' : 'search';
+        setCurrentMode(mode);
+        PokemonsStore.setCurrentMode(mode);
+        PageStore.setPage(1);
+    }, [namesByType, searchData]);
 
     useEffect(() => {
-        navigate(`/${PageStore.currentPage}`);
-    }, [PageStore.currentPage])
+        if (currentMode === 'list') {
+            getData();
+        } else if (currentMode === 'search') {
+            getDataByType();
+        }
+    }, [currentMode]);
 
+
+    useEffect(() => {
+        setSearchParams({ page: PageStore.currentPage });
+    }, [PageStore.currentPage])
     return (
         <div className="App">
-            <Routes>
-                <Route path=":id" element={
                     <main>
                         <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
                         <Grid currentCards={currentCards} currentMode={currentMode} />
-                        <PaginationList currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
+                        <PaginationList currentMode={currentMode} currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
                     </main>
-                } />
-            </Routes>
             <AsidePopup types={types} setNamesByType={setNamesByType} />
         </div>
     )

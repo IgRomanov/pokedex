@@ -1,58 +1,21 @@
+import { CardWrapper, List, ListElement, Avatar } from "./styled";
 import { useEffect, useId, useState } from "react";
-import styled from "styled-components";
 import axios from "axios";
-import PokemonPopup from "../PokemonPopup/PokemonPopup";
+import PokemonPopup from "../PokemonPopup";
 import { observer } from "mobx-react-lite";
 
-const CardWrapper = styled.div`
-    & {
-        position: relative;
-        padding: 18px 10px;
-        background-color: #ffffff;
-        border: 3px solid purple;
-        border-radius: 15px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-        color: black;
-        transition: background-color ease-in-out .4s,
-                    border ease-in-out .4s;
-    }
-    &:hover {
-        background-color: rgba(255, 255, 255, .8);
-        border: 3px solid orange;
-    }
-
-`;
-
-const List = styled.ul`
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    text-align: center;
-`;
-
-const ListElement = styled.li`
-    text-shadow: 1px 1px 2px #faba65;
-    color: #faba65;
-`;
-
-const Avatar = styled.img`
-    width: 100px;
-    height: 100px;
-`
-
 const Card = observer(({ pokemon }) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [isPopupVisible, setIsPopupVisible] = useState(false);
+
     const getCardData = async () => {
         try {
+            setIsLoading(true);
             const { data } = await axios.get(pokemon.url);
             updateCardInfo({ img: data.sprites.front_default, types: data.types, attack: data.stats[1].base_stat });
             updatePopupInfo({ weight: data.weight, height: data.height, baseExperience: data.base_experience })
         } catch (e) {
             console.log(e);
-            setIsLoading(true);
         } finally {
             setIsLoading(false);
         }
@@ -72,26 +35,23 @@ const Card = observer(({ pokemon }) => {
         baseExperience: null,
     });
 
-    const [isLoading, setIsLoading] = useState(true);
-    const [isPopupVisible, setIsPopupVisible] = useState(false);
-
     const handleCardCLick = (e) => {
+        console.log(e.target)
         setIsPopupVisible(!isPopupVisible);
-    }
+    };
 
     useEffect(() => {
-        setIsLoading(true);
         getCardData();
     }, [pokemon]);
 
     return (
-        <CardWrapper onClick={handleCardCLick}>
+        <CardWrapper onClick={handleCardCLick} >
             <h2>{pokemon.name}</h2>
             {
                 isLoading ?
-                    <span className="loader"></span>
+                    <span className="loader"/>
                     :
-                    <Avatar src={cardInfo.img} alt={pokemon.name} loading="lazy"></Avatar>
+                    <Avatar src={cardInfo.img} alt={pokemon.name} loading="lazy"/>
             }
             <div>
                 <List>
