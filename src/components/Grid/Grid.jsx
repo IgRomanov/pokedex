@@ -3,6 +3,7 @@ import Card from "../Card/Card";
 import PokemonsStore from "../../store/PokemonsStore";
 import PageStore from "../../store/PageStore";
 import { observer } from "mobx-react-lite";
+import { useId } from "react";
 
 const GridContainer = styled.div`
     display: grid;
@@ -33,14 +34,15 @@ const NotFoundH2 = styled.h2`
     font-size: 50px;
 `;
 
-const Grid = observer(({ cardId }) => {
+const Grid = observer(({ currentCards, currentMode }) => {
+    const cardId = useId()
     return (
         <>
             {
-                PokemonsStore.allPokemons.length > 0 ?
+                (currentMode === 'list' ? PokemonsStore.allPokemons : currentCards).length > 0 ?
                     <GridContainer>
                         {
-                            (PokemonsStore.currentMode === 'search' ? PokemonsStore.allPokemons.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : PokemonsStore.allPokemons).map((pokemon, index) => {
+                            (currentMode === 'search' && currentCards ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : PokemonsStore.allPokemons).map((pokemon, index) => {
                                 return (
                                     <Card key={`${cardId}-${index}`} pokemon={pokemon}></Card>
                                 )

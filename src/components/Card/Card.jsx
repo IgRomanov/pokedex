@@ -3,7 +3,6 @@ import styled from "styled-components";
 import axios from "axios";
 import PokemonPopup from "../PokemonPopup/PokemonPopup";
 import { observer } from "mobx-react-lite";
-import PokemonsStore from "../../store/PokemonsStore";
 
 const CardWrapper = styled.div`
     & {
@@ -46,7 +45,7 @@ const Avatar = styled.img`
 `
 
 const Card = observer(({ pokemon }) => {
-    const getImgs = async () => {
+    const getCardData = async () => {
         try {
             const { data } = await axios.get(pokemon.url);
             updateCardInfo({ img: data.sprites.front_default, types: data.types, attack: data.stats[1].base_stat });
@@ -82,8 +81,8 @@ const Card = observer(({ pokemon }) => {
 
     useEffect(() => {
         setIsLoading(true);
-        getImgs();
-    }, [pokemon, PokemonsStore.selectedTypes]);
+        getCardData();
+    }, [pokemon]);
 
     return (
         <CardWrapper onClick={handleCardCLick}>

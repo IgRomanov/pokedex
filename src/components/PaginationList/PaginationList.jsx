@@ -32,9 +32,9 @@ const ButtonAction = styled.button`
 `;
 
 
-const PaginationList = observer(({ handlePreviousClick, paginationId, handleNextClick, disabledNext, disabledPrevious }) => {
+const PaginationList = observer(({ handlePreviousClick, handleNextClick, currentCards }) => {
     const currentId = Number(window.location.pathname.slice(1));
-    const lastPage = PokemonsStore.allPokemons.length / PageStore.currentLimit;
+    const lastPage = Math.ceil(currentCards.length / PageStore.currentLimit);
     return (
         <PaginationListStyle>
             {

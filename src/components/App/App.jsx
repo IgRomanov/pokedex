@@ -5,30 +5,30 @@ import PokemonsStore from '../../store/PokemonsStore';
 import PageStore from '../../store/PageStore';
 import { useId } from 'react';
 import axios from 'axios';
-import { BASE_URL } from '../../utils/const';
 import PaginationList from "../PaginationList/PaginationList";
 import Grid from "../Grid/Grid";
 import Search from '../Search/Search';
 import AsidePopup from '../AsidePopup/AsidePopup';
 import { observer } from 'mobx-react-lite';
 import { useDebounce } from "../../hooks/useDebounce";
-import { getAllData, getTypes } from '../../utils/api';
+import { getAllData, getTypes, getDataWithParams, getType } from '../../utils/api';
 
 const App = observer(() => {
     const navigate = useNavigate();
-    const [currentData, setCurrentData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
     const [limitValue, setLimitValue] = useState(PageStore.currentLimit);
     const [types, setTypes] = useState([]);
     const [namesByType, setNamesByType] = useState([]);
     const [allData, setAlldata] = useState([]);
+    const [currentMode, setCurrentMode] = useState([]);
+    const [isEmpty, setIsEmpty] = useState(false);
     const searchData = useDebounce(searchValue, 1000);
 
     const paginationId = useId();
 
     const getData = async () => {
         try {
-            const { data } = await axios.get(`${BASE_URL}pokemon?offset=${PageStore.currentOffset}&limit=${PageStore.currentLimit}`);
+            const { data } = await getDataWithParams(PageStore.currentOffset, PageStore.currentLimit);
             PokemonsStore.setPokemons(data.results);
             if (data.next) {
                 PageStore.setNextUrl(data.next);
@@ -45,16 +45,26 @@ const App = observer(() => {
         try {
             const { data } = await getAllData();
             PokemonsStore.setPokemons(data.results);
-            setAlldata(data.results)
+            setAlldata(data.results);
         } catch (e) {
             console.log(e)
         }
     };
 
-    const getTypes = async () => {
+    const getAllTypes = async () => {
         try {
-            const { data } = await axios.get(`${BASE_URL}type`);
+            const { data } = await getTypes();
             setTypes(data.results);
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    const getCurrentType = async (type) => {
+        try {
+            const { data } = await getType(type);
+            let names = data.pokemon.map(pokemon => pokemon.pokemon.name);
+            setNamesByType([...namesByType, ...names]);
         } catch (e) {
             console.log(e);
         }
@@ -70,19 +80,17 @@ const App = observer(() => {
 
     const handlePreviousClick = async () => {
         try {
-            if (PokemonsStore.currentMode !== 'search') {
+            if (currentMode !== 'search') {
                 const { data } = await axios.get(PageStore.previousUrl)
                 PageStore.setPage(PageStore.currentPage - 1);
                 PokemonsStore.setPokemons(data.results);
                 PageStore.setPreviousUrl(data.previous);
                 PageStore.setNextUrl(data.next);
-                navigate(`/${PageStore.currentPage}`);
                 if (data.previous) {
                     PageStore.setPreviousUrl(data.previous);
                 };
             };
             PageStore.setPage(PageStore.currentPage - 1);
-            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
@@ -90,75 +98,69 @@ const App = observer(() => {
 
     const handleNextClick = async () => {
         try {
-            if (PokemonsStore.currentMode !== 'search') {
-                setCurrentData([]);
+            if (currentMode !== 'search') {
                 const { data } = await axios.get(PageStore.nextUrl)
                 PageStore.setPage(PageStore.currentPage + 1);
                 PokemonsStore.setPokemons(data.results);
                 PageStore.setPreviousUrl(data.previous);
                 PageStore.setNextUrl(data.next);
-                navigate(`/${PageStore.currentPage}`);
                 if (data.next) {
                     PageStore.setNextUrl(data.next);
                 };
             };
             PageStore.setPage(PageStore.currentPage + 1);
-            navigate(`/${PageStore.currentPage}`);
         } catch (e) {
             console.log(e);
         }
     };
 
     useEffect(() => {
-        if (PokemonsStore.currentMode === 'list') {
+        if (currentMode === 'list') {
             getData();
-        } else if (PokemonsStore.currentMode === 'search') {
+        } else if (currentMode === 'search') {
             getDataByType();
         }
-    }, [PokemonsStore.currentMode]);
+    }, [currentMode]);
 
     useEffect(() => {
         if (PokemonsStore.selectedTypes.length > 0) {
             PokemonsStore.selectedTypes.forEach((type) => {
-                axios.get(`${BASE_URL}type/${type}`)
-                    .then(res => res.data)
-                    .then((dataOfType) => {
-                        let names = dataOfType.pokemon.map(pokemon => pokemon.pokemon.name);
-                        setNamesByType([...namesByType, ...names]);
-
-                    })
+                getCurrentType(type);
             })
-
         } else {
             setNamesByType([]);
         }
     }, [PokemonsStore.selectedTypes])
 
-    useEffect(() => {
+    const currentCards = useMemo(() => {
         if (namesByType.length > 0) {
-            PokemonsStore.setPokemons(allData
+            return allData
                 .filter(pokemon => namesByType.includes(pokemon.name))
-                .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
-        } else {
-            PokemonsStore.setPokemons(allData.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase())));
-        }
-    }, [namesByType, searchData, allData]);
+                .filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase()));
+        } 
+        return allData.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase()));
+        
+    }, [namesByType, searchData, allData])
 
     useEffect(() => {
-        getTypes();
+        getAllTypes();
     }, []);
 
     useEffect(() => {
         if (namesByType === '' && searchData.length === 0) {
+            setCurrentMode('list');
             PokemonsStore.setCurrentMode('list');
             PageStore.setPage(1);
-            navigate("/1");
         } else {
+            setCurrentMode('search');
             PokemonsStore.setCurrentMode('search');
             PageStore.setPage(1);
-            navigate("/1");
         }
     }, [namesByType, searchData])
+
+    useEffect(() => {
+        navigate(`/${PageStore.currentPage}`);
+    }, [PageStore.currentPage])
 
     return (
         <div className="App">
@@ -166,8 +168,8 @@ const App = observer(() => {
                 <Route path=":id" element={
                     <main>
                         <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
-                        <Grid setCurrentData={setCurrentData} currentData={currentData} limit={PageStore.currentLimit} />
-                        <PaginationList handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
+                        <Grid currentCards={currentCards} currentMode={currentMode} />
+                        <PaginationList currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
                     </main>
                 } />
             </Routes>
