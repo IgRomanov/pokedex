@@ -27,6 +27,7 @@ const App = observer(() => {
     const getData = async () => {
         try {
             const { data } = await getDataWithParams(PageStore.currentOffset, PageStore.currentLimit);
+            setAlldata(data.results);
             PokemonsStore.setPokemons(data.results);
             if (data.next) {
                 PageStore.setNextUrl(data.next);
@@ -77,17 +78,16 @@ const App = observer(() => {
 
     const handlePreviousClick = async () => {
         try {
-            if (currentMode !== 'search') {
+            PageStore.setPage(PageStore.currentPage - 1);
+            if (namesByType.length === 0 && searchData === '') {
                 const { data } = await axios.get(PageStore.previousUrl)
-                PageStore.setPage(PageStore.currentPage - 1);
+                setAlldata(data.results);
                 PokemonsStore.setPokemons(data.results);
-                PageStore.setPreviousUrl(data.previous);
                 PageStore.setNextUrl(data.next);
                 if (data.previous) {
                     PageStore.setPreviousUrl(data.previous);
                 };
-            };
-            PageStore.setPage(PageStore.currentPage - 1);
+            } 
         } catch (e) {
             console.log(e);
         }
@@ -95,17 +95,16 @@ const App = observer(() => {
 
     const handleNextClick = async () => {
         try {
-            if (currentMode !== 'search') {
+            PageStore.setPage(PageStore.currentPage + 1);
+            if (namesByType.length === 0 && searchData === '') {
                 const { data } = await axios.get(PageStore.nextUrl)
-                PageStore.setPage(PageStore.currentPage + 1);
+                setAlldata(data.results);
                 PokemonsStore.setPokemons(data.results);
                 PageStore.setPreviousUrl(data.previous);
-                PageStore.setNextUrl(data.next);
                 if (data.next) {
                     PageStore.setNextUrl(data.next);
                 };
-            };
-            PageStore.setPage(PageStore.currentPage + 1);
+            } 
         } catch (e) {
             console.log(e);
         }
@@ -125,7 +124,6 @@ const App = observer(() => {
         let data = allData;
         if (namesByType.length > 0) { 
             data = data.filter(pokemon => namesByType.includes(pokemon.name));
-            console.log(data.length)
         };
         if (searchData !== '') {
             data = data.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase()))
@@ -135,24 +133,19 @@ const App = observer(() => {
     }, [namesByType, searchData, allData])
 
     useEffect(() => {
+        getData();
         getAllTypes();
     }, []);
 
     useEffect(() => {
-        const mode = namesByType.length === 0 && searchData === '' ? 'list' : 'search';
-        setCurrentMode(mode);
-        PokemonsStore.setCurrentMode(mode);
-        PageStore.setPage(1);
-    }, [namesByType, searchData]);
-
-    useEffect(() => {
-        if (currentMode === 'list') {
+        const isList= namesByType.length === 0 && searchData === '';
+        if (isList) {
             getData();
-        } else if (currentMode === 'search') {
+        } else {
             getDataByType();
         }
-    }, [currentMode]);
-
+        PageStore.setPage(1);
+    }, [namesByType, searchData]);
 
     useEffect(() => {
         setSearchParams({ page: PageStore.currentPage });
@@ -161,8 +154,8 @@ const App = observer(() => {
         <div className="App">
                     <main>
                         <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
-                        <Grid currentCards={currentCards} currentMode={currentMode} />
-                        <PaginationList currentMode={currentMode} currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
+                        <Grid currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
+                        <PaginationList currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
                     </main>
             <AsidePopup types={types} setNamesByType={setNamesByType} />
         </div>

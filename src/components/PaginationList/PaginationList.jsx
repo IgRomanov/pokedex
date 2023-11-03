@@ -13,26 +13,12 @@ const PaginationList = observer(({ handlePreviousClick, handleNextClick, current
     }
     return (
         <PaginationListStyle>
-            {
-                PokemonsStore.currentMode === 'list' ?
-                    <>
-                        <li>
-                            <ButtonAction disabled={!PageStore.previousUrl} onClick={handlePreviousClick}>Previous</ButtonAction>
-                        </li>
-                        <li>
-                            <ButtonAction disabled={!PageStore.nextUrl} onClick={handleNextClick}>Next</ButtonAction>
-                        </li>
-                    </>
-                    :
-                    <>
-                        <li>
-                            <ButtonAction disabled={currentId === 1 ? true : ''} onClick={handlePreviousClick}>Previous</ButtonAction>
-                        </li>
-                        <li>
-                            <ButtonAction disabled={currentId >= lastPage ? true : ''} onClick={handleNextClick}>Next</ButtonAction>
-                        </li>
-                    </>
-            }
+            <li>
+                <ButtonAction disabled={!PageStore.previousUrl} onClick={handlePreviousClick}>Previous</ButtonAction>
+            </li>
+            <li>
+                <ButtonAction disabled={!PageStore.nextUrl} onClick={handleNextClick}>Next</ButtonAction>
+            </li>
         </PaginationListStyle>
     )
 });

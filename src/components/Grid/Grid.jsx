@@ -5,15 +5,15 @@ import PageStore from "../../store/PageStore";
 import { observer } from "mobx-react-lite";
 import { useId } from "react";
 
-const Grid = observer(({ currentCards, currentMode }) => {
+const Grid = observer(({ currentCards, namesByType, searchData }) => {
     const cardId = useId()
     return (
         <>
             {
-                PokemonsStore.allPokemons.length > 0 ?
+                currentCards.length > 0 ?
                     <GridContainer>
                         {
-                            (currentMode === 'search' && currentCards ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : PokemonsStore.allPokemons).map((pokemon, index) => {
+                            (namesByType.length > 0 || searchData !== '' ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : currentCards).map((pokemon, index) => {
                                 return (
                                     <Card key={`${cardId}-${index}`} pokemon={pokemon}></Card>
                                 )
