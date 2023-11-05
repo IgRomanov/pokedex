@@ -77,17 +77,20 @@ const App = observer(() => {
     };
 
     const handlePreviousClick = async () => {
+        const isList = namesByType.length === 0 && searchData === '';
         try {
             PageStore.setPage(PageStore.currentPage - 1);
-            if (namesByType.length === 0 && searchData === '') {
+            if (isList) {
                 const { data } = await axios.get(PageStore.previousUrl)
                 setAlldata(data.results);
                 PokemonsStore.setPokemons(data.results);
                 PageStore.setNextUrl(data.next);
                 if (data.previous) {
                     PageStore.setPreviousUrl(data.previous);
+                } else {
+                    PageStore.setPreviousUrl('');
                 };
-            } 
+            }
         } catch (e) {
             console.log(e);
         }
@@ -103,7 +106,9 @@ const App = observer(() => {
                 PageStore.setPreviousUrl(data.previous);
                 if (data.next) {
                     PageStore.setNextUrl(data.next);
-                };
+                } else {
+                    PageStore.setNextUrl('');
+                }
             } 
         } catch (e) {
             console.log(e);
@@ -145,7 +150,7 @@ const App = observer(() => {
             getDataByType();
         }
         PageStore.setPage(1);
-    }, [namesByType, searchData]);
+    }, [namesByType, searchData, limitValue]);
 
     useEffect(() => {
         setSearchParams({ page: PageStore.currentPage });
@@ -155,7 +160,7 @@ const App = observer(() => {
                     <main>
                         <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
                         <Grid currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
-                        <PaginationList currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
+                        <PaginationList isList={namesByType.length === 0 && searchData === ''} currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
                     </main>
             <AsidePopup types={types} setNamesByType={setNamesByType} />
         </div>

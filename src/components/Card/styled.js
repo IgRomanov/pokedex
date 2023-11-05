@@ -5,7 +5,6 @@ export const CardWrapper = styled.div`
         position: relative;
         padding: 18px 10px;
         background-color: #ffffff;
-        opacity: ${props => props.$isLoading ? '.7' : 'none'};
         border: 3px solid purple;
         border-radius: 15px;
         display: flex;

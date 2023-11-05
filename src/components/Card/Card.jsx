@@ -4,24 +4,22 @@ import axios from "axios";
 import PokemonPopup from "../PokemonPopup";
 import { observer } from "mobx-react-lite";
 
-const Card = observer(({ pokemon }) => {
+const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [isPopupVisible, setIsPopupVisible] = useState(false);
+    const typeId = useId();
 
     const getCardData = async () => {
+        setIsLoading(true);
         try {
-            setIsLoading(true);
             const { data } = await axios.get(pokemon.url);
             updateCardInfo({ img: data.sprites.front_default, types: data.types, attack: data.stats[1].base_stat });
-            updatePopupInfo({ weight: data.weight, height: data.height, baseExperience: data.base_experience })
+            updatePopupInfo({ weight: data.weight, height: data.height, baseExperience: data.base_experience });
         } catch (e) {
             console.log(e);
         } finally {
             setIsLoading(false);
         }
     };
-
-    const typeId = useId();
 
     const [cardInfo, updateCardInfo] = useState({
         img: '',
@@ -35,35 +33,30 @@ const Card = observer(({ pokemon }) => {
         baseExperience: null,
     });
 
-    const handleCardCLick = (e) => {
-        console.log(e.target)
-        setIsPopupVisible(!isPopupVisible);
-    };
-
     useEffect(() => {
         getCardData();
     }, [pokemon]);
 
     return (
-        <CardWrapper onClick={handleCardCLick} >
-            <h2>{pokemon.name}</h2>
+        <CardWrapper onClick={() => handleCardClick(id)} id={id} style={{opacity: isLoading ? '.7' : 1}}>
+            <h2>{!isLoading && pokemon.name}</h2>
             {
-                isLoading ?
+                isLoading ? 
                     <span className="loader"/>
                     :
-                    <Avatar src={cardInfo.img} alt={pokemon.name} loading="lazy"/>
+                    cardInfo.img && <Avatar src={cardInfo.img} alt={pokemon.name} loading="lazy"/> 
             }
             <div>
                 <List>
                     {
-                        cardInfo.types.map((type, index) => (
+                        !isLoading && cardInfo.types && cardInfo.types.map((type, index) => (
                             <ListElement key={`${typeId}-${index}`}>{type.type.name}</ListElement>
                         ))
                     }
                 </List>
-                <span>Attack: {cardInfo.attack}</span>
+                { !isLoading && cardInfo.attack && <span>Attack: {cardInfo.attack}</span> }
             </div>
-            <PokemonPopup isVisible={isPopupVisible} popupInfo={popupInfo} />
+            <PokemonPopup isVisible={isActive} popupInfo={popupInfo} />
         </CardWrapper>
     )
 })
