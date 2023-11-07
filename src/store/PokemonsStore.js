@@ -6,8 +6,13 @@ class PokemonsStore {
         this._selectedTypes = [];
         this._currentMode = 'list';
         this._allLightData = '';
+        this._lastAddedCard = {};
         makeAutoObservable(this)
     };
+
+    setLastAddedCard(card) {
+        this._lastAddedCard = card;
+    }
 
     setSelectedType(type) {
         this._selectedTypes = type;
@@ -29,9 +34,13 @@ class PokemonsStore {
         this._allLightData = data;
     };
 
+    get lastAddedCard() {
+        return toJS(this._lastAddedCard);
+    };
+
     get allLightData() {
         return toJS(this._allLightData);
-    }
+    };
 
     get allPokemons() {
         return toJS(this._pokemons);

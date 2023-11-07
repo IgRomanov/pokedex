@@ -1,8 +1,10 @@
 import axios from "axios";
 import { BASE_URL } from "./const";
 
-export const getAllData = async () => {
-    return await axios.get(`${BASE_URL}pokemon?limit=100000&offset=0.`);
+export const getAllData = async (controller) => {
+    return await axios.get(`${BASE_URL}pokemon?limit=100000&offset=0.`, {
+        signal: controller.signal
+    });
 };
 
 export const getDataWithParams = async (offset, limit) => {

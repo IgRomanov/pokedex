@@ -11,7 +11,7 @@ export const CardWrapper = styled.div`
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
-        cursor: pointer;
+        cursor: ${props => props.$cursor};
         color: black;
         height: 265px;
         transition: background-color ease-in-out .4s,

@@ -1,4 +1,4 @@
-import { GridContainer, NotFoundContainer, NotFoundH2 } from "./styled"; 
+import { GridContainer, NotFoundContainer, NotFoundH2 } from "./styled";
 import Card from "../Card";
 import PageStore from "../../store/PageStore";
 import { observer } from "mobx-react-lite";
@@ -6,25 +6,25 @@ import { useId, useState } from "react";
 
 const Grid = observer(({ currentCards, namesByType, searchData }) => {
     const [activePopupId, setActivePopupId] = useState(false);
+    const cardId = useId()
+
     const handleCardClick = (id) => {
         if (activePopupId === id) {
             setActivePopupId(false);
-        } else { 
+        } else {
             setActivePopupId(id);
         }
     };
 
-
-    const cardId = useId()
     return (
         <>
             {
-                currentCards.length > 0 ?
+                currentCards && currentCards.length > 0 ?
                     <GridContainer>
                         {
                             (namesByType.length > 0 || searchData !== '' || currentCards.length > PageStore.currentLimit ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : currentCards).map((pokemon, index) => {
                                 return (
-                                    <Card id={`${cardId}-${index}`} key={`${cardId}-${index}`} pokemon={pokemon} isActive={activePopupId === `${cardId}-${index}`} handleCardClick={handleCardClick}></Card>
+                                    <Card draggable id={`${cardId}-${index}`} key={`${cardId}-${index}`} pokemon={pokemon} isActive={activePopupId === `${cardId}-${index}`} handleCardClick={handleCardClick}></Card>
                                 )
 
                             })

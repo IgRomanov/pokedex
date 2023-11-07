@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Routes, Route, useLocation } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import PokemonsStore from '../../store/PokemonsStore';
 import PageStore from '../../store/PageStore';
@@ -11,6 +11,7 @@ import AsidePopup from '../AsidePopup';
 import { observer } from 'mobx-react-lite';
 import { useDebounce } from "../../hooks/useDebounce";
 import { getAllData, getTypes, getDataWithParams, getType } from '../../utils/api';
+import { Dnd } from '../Dnd';
 
 const App = observer(() => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -19,6 +20,7 @@ const App = observer(() => {
     const [types, setTypes] = useState([]);
     const [namesByType, setNamesByType] = useState([]);
     const [allData, setAlldata] = useState([]);
+    const location = useLocation();
     const searchData = useDebounce(searchValue, 1000);
 
     const paginationId = useId();
@@ -39,9 +41,9 @@ const App = observer(() => {
         }
     };
 
-    const getDataByType = async () => {
+    const getDataByType = async (controller) => {
         try {
-            const { data } = await getAllData();
+            const { data } = await getAllData(controller);
             setAlldata(data.results);
         } catch (e) {
             console.log(e)
@@ -108,7 +110,7 @@ const App = observer(() => {
                 } else {
                     PageStore.setNextUrl('');
                 }
-            } 
+            }
         } catch (e) {
             console.log(e);
         }
@@ -126,42 +128,69 @@ const App = observer(() => {
 
     const currentCards = useMemo(() => {
         let data = allData;
-        if (namesByType.length > 0) { 
+        if (namesByType.length > 0) {
             data = data.filter(pokemon => namesByType.includes(pokemon.name));
         };
         if (searchData !== '') {
             data = data.filter(pokemon => pokemon.name.toLowerCase().includes(searchData.toLowerCase()))
         };
+        if (location.pathname === "/dnd") {
+            const localData = JSON.parse(localStorage.getItem('cards'));
+            localData.forEach((localCard) => {
+                data = data.filter(card => card.name !== localCard.name);
+            });
+        };
         return data;
-        
-    }, [namesByType, searchData, allData])
+
+    }, [namesByType, searchData, allData, location.pathname, PokemonsStore.lastAddedCard])
 
     useEffect(() => {
         getData();
         getAllTypes();
+        if (!JSON.parse(localStorage.getItem('cards'))) {
+            localStorage.setItem('cards', JSON.stringify([]));
+        }
     }, []);
 
     useEffect(() => {
-        const isList= namesByType.length === 0 && searchData === '';
+        const filterController = new AbortController();
+        const isList = namesByType.length === 0 && searchData === '';
         if (isList) {
             getData();
         } else {
-            getDataByType();
+            getDataByType(filterController);
         }
         PageStore.setPage(1);
+        return () => {
+            if (filterController.abort) {
+                filterController.abort();
+            }
+        }
     }, [namesByType, searchData, limitValue]);
 
     useEffect(() => {
-        setSearchParams({ page: PageStore.currentPage });
-    }, [PageStore.currentPage])
+        if (location.pathname !== "/dnd") {
+            setSearchParams({ page: PageStore.currentPage });
+        }
+    }, [PageStore.currentPage]);
+
     return (
         <div className="App">
+            <Routes>
+            <Route path="/" element={
+                <>
                     <main>
                         <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
                         <Grid currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
                         <PaginationList isList={namesByType.length === 0 && searchData === ''} currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
                     </main>
-            <AsidePopup types={types} setNamesByType={setNamesByType} />
+                    <AsidePopup types={types} setNamesByType={setNamesByType} />
+                </>
+            }/>
+            <Route path="dnd" element={
+                <Dnd currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
+            }/>
+            </Routes>
         </div>
     )
 })

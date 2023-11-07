@@ -1,11 +1,11 @@
-import { CardWrapper, List, ListElement, Avatar } from "./styled";
-import { useEffect, useId, useState } from "react";
+import { CardWrapper, Avatar, List, ListElement } from "../Card/styled";
+import { useState, useEffect } from "react";
+import { useId } from "react";
 import axios from "axios";
-import PokemonPopup from "../PokemonPopup";
-import { observer } from "mobx-react-lite";
 
-const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
+const DraggableCard = ({ pokemon, id }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const typeId = useId();
 
     const [cardInfo, updateCardInfo] = useState({
         img: '',
@@ -18,8 +18,6 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
         height: null,
         baseExperience: null,
     });
-
-    const typeId = useId();
 
     const getCardData = async () => {
         setIsLoading(true);
@@ -34,12 +32,24 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
         }
     };
 
+    const handleDragStart = (e) => {
+        e.dataTransfer.setData("card", JSON.stringify({
+            name: pokemon.name,
+            img: cardInfo.img,
+            types: cardInfo.types,
+            attack: cardInfo.attack,
+            weight: popupInfo.weight,
+            height: popupInfo.height,
+            baseExperience: popupInfo.baseExperience,
+        }));
+    };
+
     useEffect(() => {
         getCardData();
     }, [pokemon]);
 
     return (
-        <CardWrapper onClick={() => handleCardClick(id)} id={id} style={{ opacity: isLoading ? '.7' : 1 }} $cursor="pointer">
+        <CardWrapper draggable onDragStart={(e) => handleDragStart(e)} style={{ opacity: isLoading ? '.7' : 1 }} $cursor="move">
             <h2>{!isLoading && pokemon.name}</h2>
             {
                 isLoading ?
@@ -57,9 +67,8 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
                 </List>
                 {!isLoading && cardInfo.attack && <span>Attack: {cardInfo.attack}</span>}
             </div>
-            <PokemonPopup isVisible={isActive} popupInfo={popupInfo} />
         </CardWrapper>
-    )
-})
+    );
+}
 
-export default Card;
+export default DraggableCard;

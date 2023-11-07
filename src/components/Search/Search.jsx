@@ -1,8 +1,23 @@
 import { SearchWrapper, SearchForm, SearchLabel, SearchInput, SearchBtn, LimitContainer, RadioUl, RadioInput } from "./styled";
 import PageStore from "../../store/PageStore";
 import { observer } from "mobx-react-lite";
+import { useId } from "react";
 
 const Search = observer(({ handleSubmitClick, handleSearchChange, setLimitValue, limitValue }) => {
+    const limitBtnId = useId();
+
+    const limitButtons = [
+        {
+            value: 10,
+        },
+        {
+            value: 20,
+        },
+        {
+            value: 50,
+        },
+    ];
+
     const handleLimitChange = (e) => {
         PageStore.setLimit(e.target.value);
         PageStore.setPreviousUrl('');
@@ -20,10 +35,12 @@ const Search = observer(({ handleSubmitClick, handleSearchChange, setLimitValue,
             </SearchForm>
             <LimitContainer>
                 <h4>Cards per page:</h4>
-                <RadioUl>   
-                    <li>10<RadioInput type="radio" value={10} name="limit" onChange={handleLimitChange} checked={limitValue === 10} /></li>
-                    <li>20<RadioInput type="radio" value={20} name="limit" onChange={handleLimitChange} checked={limitValue === 20} /></li>
-                    <li>50<RadioInput type="radio" value={50} name="limit" onChange={handleLimitChange} checked={limitValue === 50} /></li>
+                <RadioUl>
+                    {
+                        limitButtons.map((button, i) => (
+                            <li key={`${limitBtnId}-${i}`}>{button.value}<RadioInput type="radio" value={button.value} name="limit" onChange={handleLimitChange} checked={limitValue === button.value} /></li>
+                        ))
+                    }
                 </RadioUl>
             </LimitContainer>
         </SearchWrapper>
