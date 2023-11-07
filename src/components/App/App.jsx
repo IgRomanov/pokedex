@@ -19,7 +19,6 @@ const App = observer(() => {
     const [types, setTypes] = useState([]);
     const [namesByType, setNamesByType] = useState([]);
     const [allData, setAlldata] = useState([]);
-    const [currentMode, setCurrentMode] = useState('list');
     const searchData = useDebounce(searchValue, 1000);
 
     const paginationId = useId();

@@ -2,7 +2,7 @@ import { SearchWrapper, SearchForm, SearchLabel, SearchInput, SearchBtn, LimitCo
 import PageStore from "../../store/PageStore";
 import { observer } from "mobx-react-lite";
 
-const Search = observer(({ searchValue, handleSubmitClick, handleSearchChange, setLimitValue, limitValue }) => {
+const Search = observer(({ handleSubmitClick, handleSearchChange, setLimitValue, limitValue }) => {
     const handleLimitChange = (e) => {
         PageStore.setLimit(e.target.value);
         PageStore.setPreviousUrl('');

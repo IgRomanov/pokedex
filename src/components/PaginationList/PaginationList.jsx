@@ -1,12 +1,8 @@
 import { PaginationListStyle, ButtonAction } from "./styled";
 import PageStore from "../../store/PageStore";
-import PokemonsStore from "../../store/PokemonsStore";
 import { observer } from "mobx-react-lite";
-import { useSearchParams } from "react-router-dom";
 
 const PaginationList = observer(({ handlePreviousClick, handleNextClick, currentCards, isList }) => {
-    const [searchParams] = useSearchParams();
-    const currentId = searchParams.get("page");
     let lastPage;
     if (currentCards) {
         lastPage = Math.ceil(currentCards.length / PageStore.currentLimit);
