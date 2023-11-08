@@ -3,12 +3,12 @@ import { CardsColumn } from "../CardsColumn";
 import { LocalStorageCardsColumn } from "../LocalStorageCardsColumn";
 
 const Dnd = ({ currentCards }) => {
-    return ( 
+    return (
         <MainDnd>
-            <CardsColumn currentCards={currentCards}/>
+            <CardsColumn currentCards={currentCards} />
             <LocalStorageCardsColumn />
         </MainDnd>
-     );
+    );
 }
- 
+
 export default Dnd;

@@ -2,6 +2,8 @@ import { CardWrapper, Avatar, List, ListElement } from "../Card/styled";
 import { useState, useEffect } from "react";
 import { useId } from "react";
 import axios from "axios";
+import { useDrag } from "react-dnd";
+import Draggable from "react-draggable";
 
 const DraggableCard = ({ pokemon, id }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -32,8 +34,9 @@ const DraggableCard = ({ pokemon, id }) => {
         }
     };
 
-    const handleDragStart = (e) => {
-        e.dataTransfer.setData("card", JSON.stringify({
+    const [{}, drag] = useDrag(() => ({
+        type: "card",
+        item: {
             name: pokemon.name,
             img: cardInfo.img,
             types: cardInfo.types,
@@ -41,32 +44,32 @@ const DraggableCard = ({ pokemon, id }) => {
             weight: popupInfo.weight,
             height: popupInfo.height,
             baseExperience: popupInfo.baseExperience,
-        }));
-    };
+        },
+    }), [popupInfo, cardInfo]);
 
     useEffect(() => {
         getCardData();
     }, [pokemon]);
 
     return (
-        <CardWrapper draggable onDragStart={(e) => handleDragStart(e)} style={{ opacity: isLoading ? '.7' : 1 }} $cursor="move">
-            <h2>{!isLoading && pokemon.name}</h2>
-            {
-                isLoading ?
-                    <span className="loader" />
-                    :
-                    cardInfo.img && <Avatar src={cardInfo.img} alt={pokemon.name} loading="lazy" />
-            }
-            <div>
-                <List>
-                    {
-                        !isLoading && cardInfo.types && cardInfo.types.map((type, index) => (
-                            <ListElement key={`${typeId}-${index}`}>{type.type.name}</ListElement>
-                        ))
-                    }
-                </List>
-                {!isLoading && cardInfo.attack && <span>Attack: {cardInfo.attack}</span>}
-            </div>
+        <CardWrapper style={{ opacity: isLoading ? '.7' : 1 }} $cursor="move" ref={drag}>
+                <h2>{!isLoading && pokemon.name}</h2>
+                {
+                    isLoading ?
+                        <span className="loader" />
+                        :
+                        cardInfo.img && <Avatar src={cardInfo.img} alt={pokemon.name} loading="lazy" />
+                }
+                <div>
+                    <List>
+                        {
+                            !isLoading && cardInfo.types && cardInfo.types.map((type, index) => (
+                                <ListElement key={`${typeId}-${index}`}>{type.type.name}</ListElement>
+                            ))
+                        }
+                    </List>
+                    {!isLoading && cardInfo.attack && <span>Attack: {cardInfo.attack}</span>}
+                </div>
         </CardWrapper>
     );
 }

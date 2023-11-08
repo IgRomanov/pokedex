@@ -136,20 +136,22 @@ const App = observer(() => {
         };
         if (location.pathname === "/dnd") {
             const localData = JSON.parse(localStorage.getItem('cards'));
-            localData.forEach((localCard) => {
-                data = data.filter(card => card.name !== localCard.name);
-            });
+            if (localData) {
+                localData.forEach((localCard) => {
+                    data = data.filter(card => card.name !== localCard.name);
+                });
+            }
         };
         return data;
 
-    }, [namesByType, searchData, allData, location.pathname, PokemonsStore.lastAddedCard])
+    }, [namesByType, searchData, allData, location.pathname, PokemonsStore.lastAddedCard]);
 
     useEffect(() => {
         getData();
         getAllTypes();
         if (!JSON.parse(localStorage.getItem('cards'))) {
             localStorage.setItem('cards', JSON.stringify([]));
-        }
+        };
     }, []);
 
     useEffect(() => {
@@ -177,19 +179,19 @@ const App = observer(() => {
     return (
         <div className="App">
             <Routes>
-            <Route path="/" element={
-                <>
-                    <main>
-                        <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
-                        <Grid currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
-                        <PaginationList isList={namesByType.length === 0 && searchData === ''} currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
-                    </main>
-                    <AsidePopup types={types} setNamesByType={setNamesByType} />
-                </>
-            }/>
-            <Route path="dnd" element={
-                <Dnd currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
-            }/>
+                <Route path="/" element={
+                    <>
+                        <main>
+                            <Search searchValue={searchValue} handleSearchChange={handleSearchChange} handleSubmitClick={handleSubmitClick} setLimitValue={setLimitValue} limitValue={limitValue} />
+                            <Grid currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
+                            <PaginationList isList={namesByType.length === 0 && searchData === ''} currentCards={currentCards} handleNextClick={handleNextClick} handlePreviousClick={handlePreviousClick} paginationId={paginationId} />
+                        </main>
+                        <AsidePopup types={types} setNamesByType={setNamesByType} />
+                    </>
+                }/>
+                <Route path="dnd" element={
+                    <Dnd currentCards={currentCards} namesByType={namesByType} searchData={searchData} />
+                }/>
             </Routes>
         </div>
     )

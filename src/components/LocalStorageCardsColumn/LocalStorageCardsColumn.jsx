@@ -4,35 +4,34 @@ import { useEffect, useId, useState } from "react";
 import { GridContainer } from "../Grid/styled";
 import { DropCard } from "../DropCard.jsx/index.js";
 import PokemonsStore from "../../store/PokemonsStore";
+import { useDrop } from "react-dnd";
 
 const LocalStorageCardsColumn = observer(() => {
     const [localStorageCards, setLocalStorageCards] = useState([]);
     const cardId = useId();
 
-    const handleDragOver = (e) => {
-        e.preventDefault();
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
+    const handleDrop = (item) => {
         const localCards = JSON.parse(localStorage.getItem('cards'));
-        const cardData = JSON.parse(e.dataTransfer.getData("card"));
-        const isExisted = localCards.some(localCard => localCard.name === cardData.name);
+        const isExisted = localCards.some(localCard => localCard.name === item.name);
         if (!isExisted) {
-            localCards.push(cardData);
+            localCards.push(item);
             localStorage.setItem('cards', JSON.stringify(localCards));
-            setLocalStorageCards([...localStorageCards, cardData]);
-            PokemonsStore.setLastAddedCard(cardData);
+            setLocalStorageCards([...localStorageCards, item]);
+            PokemonsStore.setLastAddedCard(item);
         }
-    };
+    }
+
+    const [{}, drop] = useDrop({
+        accept: 'card',
+        drop: (item) => handleDrop(item),
+    })
 
     useEffect(() => {
         const localCards = JSON.parse(localStorage.getItem('cards'));
         setLocalStorageCards(localCards);
     }, []);
-    
     return (
-        <GridContainer onDragOver={handleDragOver} onDrop={handleDrop}>
+        <GridContainer $color={"blue"} ref={drop}>
             {localStorageCards &&
                 (localStorageCards.length > PageStore.currentLimit ? localStorageCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : localStorageCards).map((pokemon, index) => {
                     return (

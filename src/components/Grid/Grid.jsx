@@ -20,7 +20,7 @@ const Grid = observer(({ currentCards, namesByType, searchData }) => {
         <>
             {
                 currentCards && currentCards.length > 0 ?
-                    <GridContainer>
+                    <GridContainer $color="black">
                         {
                             (namesByType.length > 0 || searchData !== '' || currentCards.length > PageStore.currentLimit ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : currentCards).map((pokemon, index) => {
                                 return (

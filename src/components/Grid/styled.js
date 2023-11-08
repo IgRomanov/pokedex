@@ -6,7 +6,7 @@ export const GridContainer = styled.div`
     grid-auto-rows: minmax(100px, max-content);
     gap: 10px;
     padding: 30px 30px;
-    background-color: black;
+    background-color: ${props => props.$color};
     min-height: 100vh;
     border-bottom-left-radius: 30px;
     border-bottom-right-radius: 30px;

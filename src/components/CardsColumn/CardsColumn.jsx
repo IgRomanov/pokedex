@@ -8,7 +8,7 @@ const CardsColumn = observer(({ currentCards }) => {
     const cardId = useId();
 
     return (
-        <GridContainer>
+        <GridContainer $color="blue">
             {currentCards &&
                 (currentCards.length > PageStore.currentLimit ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : currentCards).map((pokemon, index) => {
                     return (
