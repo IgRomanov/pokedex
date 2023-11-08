@@ -1,5 +1,5 @@
 import { CardWrapper, List, ListElement, Avatar } from "./styled";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, useCallback } from "react";
 import axios from "axios";
 import PokemonPopup from "../PokemonPopup";
 import { observer } from "mobx-react-lite";
@@ -21,7 +21,7 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
 
     const typeId = useId();
 
-    const getCardData = async () => {
+    const getCardData = useCallback(async () => {
         setIsLoading(true);
         try {
             const { data } = await axios.get(pokemon.url);
@@ -32,11 +32,11 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [pokemon.url]);
 
     useEffect(() => {
         getCardData();
-    }, [pokemon]);
+    }, [pokemon, getCardData]);
 
     return (
         <CardWrapper onClick={() => handleCardClick(id)} id={id} style={{ opacity: isLoading ? '.7' : 1 }} $cursor="pointer">

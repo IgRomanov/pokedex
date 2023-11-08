@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useSearchParams, Routes, Route, useLocation } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import PokemonsStore from '../../store/PokemonsStore';
@@ -14,7 +15,7 @@ import { getAllData, getTypes, getDataWithParams, getType } from '../../utils/ap
 import { Dnd } from '../Dnd';
 
 const App = observer(() => {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [,setSearchParams] = useSearchParams();
     const [searchValue, setSearchValue] = useState('');
     const [limitValue, setLimitValue] = useState(PageStore.currentLimit);
     const [types, setTypes] = useState([]);

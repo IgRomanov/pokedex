@@ -1,9 +1,8 @@
 import { CardWrapper, Avatar, List, ListElement } from "../Card/styled";
 import { useState, useEffect } from "react";
-import { useId } from "react";
+import { useId, useCallback } from "react";
 import axios from "axios";
 import { useDrag } from "react-dnd";
-import Draggable from "react-draggable";
 
 const DraggableCard = ({ pokemon, id }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +20,7 @@ const DraggableCard = ({ pokemon, id }) => {
         baseExperience: null,
     });
 
-    const getCardData = async () => {
+    const getCardData = useCallback(async () => {
         setIsLoading(true);
         try {
             const { data } = await axios.get(pokemon.url);
@@ -32,7 +31,7 @@ const DraggableCard = ({ pokemon, id }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [pokemon.url]);
 
     const [{}, drag] = useDrag(() => ({
         type: "card",
@@ -49,7 +48,7 @@ const DraggableCard = ({ pokemon, id }) => {
 
     useEffect(() => {
         getCardData();
-    }, [pokemon]);
+    }, [pokemon, getCardData]);
 
     return (
         <CardWrapper style={{ opacity: isLoading ? '.7' : 1 }} $cursor="move" ref={drag}>
