@@ -6,17 +6,7 @@ import { useId } from "react";
 const Search = observer(({ handleSubmitClick, handleSearchChange, setLimitValue, limitValue }) => {
     const limitBtnId = useId();
 
-    const limitButtons = [
-        {
-            value: 10,
-        },
-        {
-            value: 20,
-        },
-        {
-            value: 50,
-        },
-    ];
+    const limitButtons = [10, 20, 30];
 
     const handleLimitChange = (e) => {
         PageStore.setLimit(e.target.value);
@@ -37,8 +27,8 @@ const Search = observer(({ handleSubmitClick, handleSearchChange, setLimitValue,
                 <h4>Cards per page:</h4>
                 <RadioUl>
                     {
-                        limitButtons.map((button, i) => (
-                            <li key={`${limitBtnId}-${i}`}>{button.value}<RadioInput type="radio" value={button.value} name="limit" onChange={handleLimitChange} checked={limitValue === button.value} /></li>
+                        limitButtons.map((value, i) => (
+                            <li key={`${limitBtnId}-${i}`}>{value}<RadioInput type="radio" value={value} name="limit" onChange={handleLimitChange} checked={limitValue === value} /></li>
                         ))
                     }
                 </RadioUl>

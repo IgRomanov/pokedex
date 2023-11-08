@@ -10,11 +10,9 @@ const CardsColumn = observer(({ currentCards }) => {
     return (
         <GridContainer $color="blue">
             {currentCards &&
-                (currentCards.length > PageStore.currentLimit ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : currentCards).map((pokemon, index) => {
-                    return (
-                        <DraggableCard key={`${cardId}-${index}`} id={`${cardId}-${index}`} pokemon={pokemon}></DraggableCard>
-                    )
-                })
+                (currentCards.length > PageStore.currentLimit ? currentCards.slice(PageStore.currentOffset, PageStore.currentLimit * PageStore.currentPage) : currentCards).map((pokemon, index) => (
+                    <DraggableCard key={`${cardId}-${index}`} id={`${cardId}-${index}`} pokemon={pokemon}/>      
+                ))
             }
         </GridContainer>
     )

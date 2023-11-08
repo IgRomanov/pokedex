@@ -10,7 +10,7 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
     const [cardInfo, updateCardInfo] = useState({
         img: '',
         types: [],
-        attack: null,
+        maxStat: null,
     });
 
     const [popupInfo, updatePopupInfo] = useState({
@@ -21,11 +21,23 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
 
     const typeId = useId();
 
+    const checkMaxValue = (value) => {
+        if (Array.isArray(value)) {
+            return value[0];
+        }
+        return value;
+    };
+
     const getCardData = useCallback(async () => {
         setIsLoading(true);
         try {
             const { data } = await axios.get(pokemon.url);
-            updateCardInfo({ img: data.sprites.front_default, types: data.types, attack: data.stats[1].base_stat });
+            const stats = [...data.stats];
+            const maxValue = Math.max(...stats.map(stat => stat.base_stat));
+            const maxStats = stats.filter(stat => stat.base_stat === maxValue);
+            const maxStat = checkMaxValue(maxStats);
+            updateCardInfo({ img: data.sprites.front_default, types: data.types, maxStat: maxStat});
+            console.log(maxStat)
             updatePopupInfo({ weight: data.weight, height: data.height, baseExperience: data.base_experience });
         } catch (e) {
             console.log(e);
@@ -55,7 +67,7 @@ const Card = observer(({ pokemon, handleCardClick, isActive, id }) => {
                         ))
                     }
                 </List>
-                {!isLoading && cardInfo.attack && <span>Attack: {cardInfo.attack}</span>}
+                {!isLoading && cardInfo.maxStat && <span>{cardInfo.maxStat.stat.name.replaceAll('-', ' ') }: {cardInfo.maxStat.base_stat}</span>}
             </div>
             <PokemonPopup isVisible={isActive} popupInfo={popupInfo} />
         </CardWrapper>
